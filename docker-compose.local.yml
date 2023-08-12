@@ -36,6 +36,23 @@ services:
       - postgres
       - rabbitmq
 
+  smartcontractinterface:
+    build:
+      context: './'
+      dockerfile: './SmartContractInterface/Dockerfile'
+    container_name: 'smartcontractinterface'
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 3s
+    expose:
+      - "50051"
+    networks:
+      - mynet
+    depends_on:
+      - postgres
+      - rabbitmq
+
   postgres:
     image: postgres
     restart: always

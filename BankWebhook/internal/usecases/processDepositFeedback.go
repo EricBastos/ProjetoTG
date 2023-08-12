@@ -87,10 +87,10 @@ func (u *ProcessDepositFeedbackUsecase) Process(deposit *dtos.DepositFeedbackInp
 			if createEmitErr != nil {
 				return
 			}
-			//createEmitErr = u.rabbitClient.CallSmartcontract(op, entities.MINT)
-			//if createEmitErr != nil {
-			//	return
-			//}
+			createEmitErr = u.rabbitClient.CallSmartcontract(op, entities.MINT)
+			if createEmitErr != nil {
+				return
+			}
 
 		}()
 

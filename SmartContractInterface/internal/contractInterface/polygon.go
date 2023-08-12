@@ -1,10 +1,10 @@
-package contracts
+package contractInterface
 
 import (
 	"context"
 	"errors"
 	"github.com/EricBastos/ProjetoTG/Library/entities"
-	"github.com/EricBastos/ProjetoTG/SmartContractInterface/internal/contracts/polygon"
+	"github.com/EricBastos/ProjetoTG/SmartContractInterface/internal/contractInterface/polygon"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"log"

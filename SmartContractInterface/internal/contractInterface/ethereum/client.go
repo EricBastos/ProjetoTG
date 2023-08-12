@@ -1,14 +1,15 @@
-package polygon
+package ethereum
 
 import (
+	"github.com/EricBastos/ProjetoTG/SmartContractInterface/internal/smartContract"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"log"
 )
 
 var (
-	Polygon         *ethclient.Client
-	Contract        *brlatoken.BRLAContract
+	Eth             *ethclient.Client
+	Contract        *smartContract.StableCoin
 	ContractAddress common.Address
 )
 
@@ -19,11 +20,11 @@ func SetupClients(
 	if err != nil {
 		log.Fatal(err.Error())
 	}
-	Polygon = ethClient
+	Eth = ethClient
 
 	contractAddress := common.HexToAddress(contAddress)
 	ContractAddress = contractAddress
-	ethContract, err := brlatoken.NewStableContract(contractAddress, Polygon)
+	ethContract, err := smartContract.NewStableCoin(contractAddress, Eth)
 	if err != nil {
 		log.Fatal(err.Error())
 	}

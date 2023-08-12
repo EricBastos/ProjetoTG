@@ -1,10 +1,10 @@
-package contracts
+package contractInterface
 
 import (
 	"context"
 	"errors"
 	"github.com/EricBastos/ProjetoTG/Library/entities"
-	ethereum2 "github.com/EricBastos/ProjetoTG/SmartContractInterface/internal/contracts/ethereum"
+	ethereum2 "github.com/EricBastos/ProjetoTG/SmartContractInterface/internal/contractInterface/ethereum"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"

@@ -1,4 +1,4 @@
-package contracts
+package contractInterface
 
 import (
 	"github.com/EricBastos/ProjetoTG/Library/entities"

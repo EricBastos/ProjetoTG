@@ -3,7 +3,7 @@ package ethereum
 import (
 	"context"
 	"github.com/EricBastos/ProjetoTG/SmartContractInterface/internal/contractCaller"
-	"github.com/EricBastos/ProjetoTG/SmartContractInterface/internal/contracts/ethereum"
+	"github.com/EricBastos/ProjetoTG/SmartContractInterface/internal/contractInterface/ethereum"
 	"github.com/EricBastos/ProjetoTG/SmartContractInterface/internal/grpcServer/pb"
 )
 

@@ -7,7 +7,7 @@ import (
 	entities2 "github.com/EricBastos/ProjetoTG/Library/pkg/entities"
 	"github.com/EricBastos/ProjetoTG/SmartContractInterface/configs"
 	"github.com/EricBastos/ProjetoTG/SmartContractInterface/internal/contractCaller"
-	"github.com/EricBastos/ProjetoTG/SmartContractInterface/internal/contracts"
+	"github.com/EricBastos/ProjetoTG/SmartContractInterface/internal/contractInterface"
 	"github.com/EricBastos/ProjetoTG/SmartContractInterface/internal/rabbitmqClient"
 	"github.com/cenkalti/backoff/v4"
 	"github.com/ethereum/go-ethereum/ethclient"
@@ -22,7 +22,7 @@ import (
 type Operator struct {
 	rabbit              *rabbitmqClient.RabbitMQClient
 	smartContractOpRepo database.SmartcontractOperationInterface
-	transactionNotify   chan *contracts.OnGoingTransactionData
+	transactionNotify   chan *contractInterface.OnGoingTransactionData
 	interrupt           chan os.Signal
 	client              *ethclient.Client
 	online              bool
@@ -38,7 +38,7 @@ type PublishData struct {
 type TxWithError struct {
 	SmartcontractCallId string
 	OperationName       string
-	Tx                  *contracts.TxResult
+	Tx                  *contractInterface.TxResult
 	Error               error
 }
 
@@ -87,7 +87,7 @@ func NewOperator(smartcontractOpDb database.SmartcontractOperationInterface, rab
 	op.notifyOffline = notifyOff
 	op.setOnlineStatus(true)
 	op.smartContractOpRepo = smartcontractOpDb
-	op.transactionNotify = make(chan *contracts.OnGoingTransactionData, 1000)
+	op.transactionNotify = make(chan *contractInterface.OnGoingTransactionData, 1000)
 	op.rabbit = rabbit
 	return op
 }
@@ -96,14 +96,14 @@ func (o *Operator) Start() {
 
 	defer o.setOnlineStatus(false)
 
-	ethConfig := contracts.EthContractConfig{
+	ethConfig := contractInterface.EthContractConfig{
 		RPCHost:           configs.Cfg.EthereumRpcHost,
 		ContractAddress:   configs.Cfg.EthereumTokenContract,
 		OwnerPrivateKey:   configs.Cfg.EthereumWalletPrivateKey,
 		TransactionNotify: o.transactionNotify,
 	}
 
-	polyConfig := contracts.PolygonContractConfig{
+	polyConfig := contractInterface.PolygonContractConfig{
 		RPCHost:           configs.Cfg.PolygonRpcHost,
 		ContractAddress:   configs.Cfg.PolygonTokenContract,
 		OwnerPrivateKey:   configs.Cfg.PolygonWalletPrivateKey,
@@ -169,7 +169,7 @@ MainForLoop:
 					o.nackMsg(message.OperationOriginType, m.DeliveryTag, message.Operation, message.ID, false, "", "Error encoding operation data: "+string(m.Body), message.IsRetry)
 					continue
 				}
-				ongoingTransaction := &contracts.OnGoingTransactionData{
+				ongoingTransaction := &contractInterface.OnGoingTransactionData{
 					Operation:           message.Operation,
 					ID:                  message.ID,
 					OperationOriginType: message.OperationOriginType,
@@ -254,10 +254,10 @@ func errorsToRepeat(err error) bool {
 	return false
 }
 
-func (o *Operator) Mint(data *MintData, txData *contracts.OnGoingTransactionData) []TxWithError {
+func (o *Operator) Mint(data *MintData, txData *contractInterface.OnGoingTransactionData) []TxWithError {
 	txData.WalletAddress = data.WalletAddress
 
-	var resp *contracts.TxResult
+	var resp *contractInterface.TxResult
 	var respId string
 	operation := func() error {
 		txData.PostedTime = time.Now().UnixMilli()
@@ -294,10 +294,10 @@ func (o *Operator) Mint(data *MintData, txData *contracts.OnGoingTransactionData
 	}
 }
 
-func (o *Operator) Burn(data *BurnData, txData *contracts.OnGoingTransactionData) []TxWithError {
+func (o *Operator) Burn(data *BurnData, txData *contractInterface.OnGoingTransactionData) []TxWithError {
 	txData.WalletAddress = data.WalletAddress
 
-	var resp *contracts.TxResult
+	var resp *contractInterface.TxResult
 	var respId string
 	operation := func() error {
 		txData.PostedTime = time.Now().UnixMilli()

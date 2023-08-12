@@ -3,7 +3,7 @@ package polygon
 import (
 	"context"
 	"github.com/EricBastos/ProjetoTG/SmartContractInterface/internal/contractCaller"
-	"github.com/EricBastos/ProjetoTG/SmartContractInterface/internal/contracts/polygon"
+	"github.com/EricBastos/ProjetoTG/SmartContractInterface/internal/contractInterface/polygon"
 	"github.com/EricBastos/ProjetoTG/SmartContractInterface/internal/grpcServer/pb"
 )
 

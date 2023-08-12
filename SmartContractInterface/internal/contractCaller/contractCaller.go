@@ -3,28 +3,28 @@ package contractCaller
 import (
 	"errors"
 	"github.com/EricBastos/ProjetoTG/Library/entities"
-	"github.com/EricBastos/ProjetoTG/SmartContractInterface/internal/contracts"
+	"github.com/EricBastos/ProjetoTG/SmartContractInterface/internal/contractInterface"
 )
 
 var CC *ContractCaller
 
 type ContractCaller struct {
-	Contracts map[string]contracts.BRLAContract
+	Contracts map[string]contractInterface.BRLAContract
 }
 
 func InitializeContractCaller(
-	ethConfig *contracts.EthContractConfig,
-	polyConfig *contracts.PolygonContractConfig) {
+	ethConfig *contractInterface.EthContractConfig,
+	polyConfig *contractInterface.PolygonContractConfig) {
 	c := ContractCaller{
-		Contracts: map[string]contracts.BRLAContract{
-			"Ethereum": contracts.NewBRLAEthereumContract(ethConfig),
-			"Polygon":  contracts.NewBRLAPolygonContract(polyConfig),
+		Contracts: map[string]contractInterface.BRLAContract{
+			"Ethereum": contractInterface.NewBRLAEthereumContract(ethConfig),
+			"Polygon":  contractInterface.NewBRLAPolygonContract(polyConfig),
 		},
 	}
 	CC = &c
 }
 
-func (c *ContractCaller) Mint(txData *contracts.OnGoingTransactionData, skipTest bool, chain string, address string, amount int) (*contracts.TxResult, error) {
+func (c *ContractCaller) Mint(txData *contractInterface.OnGoingTransactionData, skipTest bool, chain string, address string, amount int) (*contractInterface.TxResult, error) {
 	contract, ok := c.Contracts[chain]
 	if !ok {
 		return nil, errors.New("chain not implemented")
@@ -32,7 +32,7 @@ func (c *ContractCaller) Mint(txData *contracts.OnGoingTransactionData, skipTest
 	return contract.Mint(txData, skipTest, address, amount)
 }
 
-func (c *ContractCaller) Burn(txData *contracts.OnGoingTransactionData, skipTest bool, chain string, address string, amount int, permitData *entities.PermitData) (*contracts.TxResult, error) {
+func (c *ContractCaller) Burn(txData *contractInterface.OnGoingTransactionData, skipTest bool, chain string, address string, amount int, permitData *entities.PermitData) (*contractInterface.TxResult, error) {
 	contract, ok := c.Contracts[chain]
 	if !ok {
 		return nil, errors.New("chain not implemented")
