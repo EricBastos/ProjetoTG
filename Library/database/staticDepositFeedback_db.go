@@ -1,7 +1,6 @@
 package database
 
 import (
-	"errors"
 	"github.com/EricBastos/ProjetoTG/Library/entities"
 	"gorm.io/gorm"
 )
@@ -22,8 +21,6 @@ func (u *StaticDepositFeedbackDB) FindById(id string) (*entities.StaticDepositFe
 	var feedback entities.StaticDepositFeedback
 	if err := u.DB.Where("id = ?", id).First(&feedback).Error; err != nil {
 		return nil, err
-	} else if feedback.ID == "" {
-		return nil, errors.New("static deposit feedback not found")
 	}
 	return &feedback, nil
 }

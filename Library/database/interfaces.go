@@ -19,6 +19,12 @@ type FeedbackInterface interface {
 	FindById(id string) (*entities.Feedback, error)
 }
 
+type MintOpInterface interface {
+	Create(op *entities.MintOp) error
+	CreateEmit(op *entities.MintOp, f func() error) error
+	Get(id string) (*entities.MintOp, error)
+}
+
 type StaticDepositFeedbackInterface interface {
 	Create(feedback *entities.StaticDepositFeedback) error
 	FindById(id string) (*entities.StaticDepositFeedback, error)
@@ -27,12 +33,9 @@ type StaticDepositFeedbackInterface interface {
 type StaticDepositInterface interface {
 	Create(invoice *entities.StaticDeposit) error
 	Update(updatedDeposit *entities.StaticDeposit) error
-	GetLogs(taxId, responsibleUser string, page, pageSize int) ([]entities.StaticDepositAPI, error)
-	GetBusinessLogs(responsibleUser string, page, pageSize int) ([]entities.StaticDepositAPI, error)
 	FindById(id string) (*entities.StaticDeposit, error)
 	FindUnpaidByTaxIdAndAmount(taxId string, amount int) (*entities.StaticDeposit, error)
 	FindUnpaidByTaxId(taxId string) (*entities.StaticDeposit, error)
-	UpdateSpecificColumns(updatedDeposit *entities.StaticDeposit, columns map[string]interface{}) error
 }
 
 type BurnOpInterface interface {
@@ -41,6 +44,16 @@ type BurnOpInterface interface {
 	GetLogs(docData, responsibleUser string, page, pageSize int) ([]entities.BurnOpAPI, error)
 	GetBusinessLogs(responsibleUser string, page, pageSize int) ([]entities.BurnOpAPI, error)
 	Get(id string) (*entities.BurnOp, error)
+}
+
+type TransferInterface interface {
+	Create(transfer *entities.Transfer) error
+	FindById(id string) (*entities.Transfer, error)
+}
+
+type TransferFeedbackInterface interface {
+	Create(feedback *entities.TransferFeedback) error
+	FindById(id string) (*entities.TransferFeedback, error)
 }
 
 type BurnFeedbackInterface interface {

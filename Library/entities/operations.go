@@ -125,10 +125,6 @@ type MintOp struct {
 	AssociatedBankTransactionType string
 
 	SmartContractOps []SmartcontractOperation `json:"smartContractOps" gorm:"polymorphic:Operation"`
-	//WorkspaceId      string                   `json:"-"`
-	NotifyEmail bool   `json:"notifyEmail"`
-	ElbowWallet string `json:"elbowWallet"`
-	Fee         int    `json:"fee"`
 }
 
 type SwapOp struct {

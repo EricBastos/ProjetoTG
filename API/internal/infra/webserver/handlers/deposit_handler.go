@@ -72,7 +72,7 @@ func (h *DepositHandler) CreatePixDeposit(w http.ResponseWriter, r *http.Request
 	// Activate Webhook after 10 seconds
 	go func() {
 		time.Sleep(10 * time.Second)
-		err := postStaticPixDepositWebhook(input.Amount, userInfo.TaxId, h.httpClient)
+		err := postStaticPixDepositWebhook(input.Amount, userInfo.TaxId, h.httpClient, depositId)
 		if err != nil {
 			log.Println("(SANDBOX) Error posting pseudo webhook for deposit: " + err.Error())
 		}
@@ -83,12 +83,15 @@ func (h *DepositHandler) CreatePixDeposit(w http.ResponseWriter, r *http.Request
 	w.WriteHeader(http.StatusCreated)
 }
 
-func postStaticPixDepositWebhook(amount int, taxId string, httpClient *http.Client) error {
+func postStaticPixDepositWebhook(amount int, taxId string, httpClient *http.Client, depositId string) error {
 
 	body, _ := json.Marshal(map[string]interface{}{
 		"subscription": "deposit",
-		"amount":       amount,
-		"taxId":        taxId,
+		"data": map[string]interface{}{
+			"amount":    amount,
+			"taxId":     taxId,
+			"depositId": depositId,
+		},
 	})
 
 	webhookUrl := "http://" + configs.Cfg.BankWebhookHost + ":" + configs.Cfg.BankWebhookPort
@@ -113,7 +116,7 @@ func postStaticPixDepositWebhook(amount int, taxId string, httpClient *http.Clie
 }
 
 func firstValidationCreateUserStaticPixDepositInput(input *dtos.CreateUserStaticPixDepositInput) error {
-	if input.Amount != 0 {
+	if input.Amount <= 0 {
 		return errors.New(utils.InvalidMintAmount)
 	}
 	return nil

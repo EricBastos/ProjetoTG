@@ -16,6 +16,25 @@ services:
       - mynet
     depends_on:
       - postgres
+      - rabbitmq
+      - bankwebhook
+
+  bankwebhook:
+    build:
+      context: './'
+      dockerfile: './BankWebhook/Dockerfile'
+    container_name: 'bankwebhook'
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 3s
+    expose:
+      - "8080"
+    networks:
+      - mynet
+    depends_on:
+      - postgres
+      - rabbitmq
 
   postgres:
     image: postgres
@@ -30,9 +49,26 @@ services:
     networks:
       - mynet
 
+  rabbitmq:
+    image: rabbitmq:3.10-management-alpine
+    container_name: 'rabbitmq'
+    hostname: 'rabbitmq'
+    expose:
+      - "5672"
+      - "15672"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq/
+      - rabbitmq_log:/var/log/rabbitmq/
+      - ./rabbit/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf
+      - ./rabbit/definitions.json:/etc/rabbitmq/definitions.json
+    networks:
+      - mynet
+
 networks:
   mynet:
     driver: bridge
 
 volumes:
   db:
+  rabbitmq_data:
+  rabbitmq_log:

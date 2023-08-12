@@ -38,6 +38,14 @@ func (u *CreateUserStaticPixDepositUsecase) CreateDeposit(input *dtos.CreateUser
 
 func (u *CreateUserStaticPixDepositUsecase) createAsUser(input *dtos.CreateUserStaticPixDepositInput) (string, error, int) {
 
+	validateChainFunc, ok := utils.ValidChains[input.Chain]
+	if !ok {
+		return "", errors.New(utils.InvalidChain), http.StatusBadRequest
+	}
+	if err := validateChainFunc(&input.WalletAddress); err != nil {
+		return "", err, http.StatusBadRequest
+	}
+
 	createdAt := time.Now()
 	due := createdAt.Add(5 * time.Hour)
 

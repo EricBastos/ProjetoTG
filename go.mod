@@ -9,6 +9,7 @@ require (
 	github.com/google/uuid v1.3.0
 	github.com/klassmann/cpfcnpj v0.0.0-20200907140233-a595c5fd8de1
 	github.com/lestrrat-go/jwx v1.2.26
+	github.com/rabbitmq/amqp091-go v1.8.1
 	github.com/spf13/viper v1.16.0
 	github.com/starkbank/sdk-go v0.3.0
 	golang.org/x/crypto v0.12.0
