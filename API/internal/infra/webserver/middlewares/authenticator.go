@@ -57,38 +57,6 @@ func (m *Authenticator) Authenticate(auths ...string) func(next http.Handler) ht
 
 func (m *Authenticator) injectTokenInfo(token jwt.Token, ctx context.Context) (context.Context, error) {
 
-	isSuperuserMaybe, ok := token.Get("isSuperuser")
-	if !ok {
-		return nil, errors.New("isSuperuser param not found")
-	}
-	isSuperuser, ok := isSuperuserMaybe.(bool)
-	if !ok {
-		return nil, errors.New("isSuperuser param not found")
-	}
-	kycLevelMaybe, ok := token.Get("KYCLevel")
-	if !ok {
-		return nil, errors.New("[1] KYCLevel param not found")
-	}
-	kycLevel, ok := kycLevelMaybe.(float64)
-	if !ok {
-		return nil, errors.New("[2] KYCLevel param not found")
-	}
-	firstNameMaybe, ok := token.Get("firstName")
-	if !ok {
-		return nil, errors.New("firstName param not found")
-	}
-	firstName, ok := firstNameMaybe.(string)
-	if !ok {
-		return nil, errors.New("firstName param not found")
-	}
-	lastNameMaybe, ok := token.Get("lastName")
-	if !ok {
-		return nil, errors.New("lastName param not found")
-	}
-	lastName, ok := lastNameMaybe.(string)
-	if !ok {
-		return nil, errors.New("lastName param not found")
-	}
 	taxIdMaybe, ok := token.Get("taxId")
 	if !ok {
 		return nil, errors.New("taxId param not found")
@@ -105,22 +73,9 @@ func (m *Authenticator) injectTokenInfo(token jwt.Token, ctx context.Context) (c
 	if !ok {
 		return nil, errors.New("email param not found")
 	}
-	isPjMaybe, ok := token.Get("isPj")
-	if !ok {
-		return nil, errors.New("isPj param not found")
-	}
-	isPj, ok := isPjMaybe.(bool)
-	if !ok {
-		return nil, errors.New("isPj param not found")
-	}
 	ctx = context.WithValue(ctx, "subject", token.Subject())
-	ctx = context.WithValue(ctx, "isSuperuser", isSuperuser)
-	ctx = context.WithValue(ctx, "KYCLevel", int64(kycLevel))
-	ctx = context.WithValue(ctx, "firstName", firstName)
-	ctx = context.WithValue(ctx, "lastName", lastName)
 	ctx = context.WithValue(ctx, "taxId", taxId)
 	ctx = context.WithValue(ctx, "email", email)
-	ctx = context.WithValue(ctx, "isPj", isPj)
 
 	return ctx, nil
 }

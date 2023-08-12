@@ -39,7 +39,7 @@ func (u *UserDB) Create(user *entities.User) error {
 func (u *UserDB) FindByEmail(email string) (*entities.User, error) {
 	var user entities.User
 
-	if err := u.DB.Where("email = ?", email).Preload("Kyc").Preload("Kyc.KycStatus").First(&user).Error; err != nil {
+	if err := u.DB.Where("email = ?", email).First(&user).Error; err != nil {
 		return nil, err
 	} else if user.ID == nil {
 		return nil, errors.New("user not found")
@@ -51,7 +51,7 @@ func (u *UserDB) FindByEmail(email string) (*entities.User, error) {
 func (u *UserDB) FindById(id string) (*entities.User, error) {
 	var user entities.User
 
-	if err := u.DB.Where("id = ?", id).Preload("Kyc").Preload("Kyc.KycStatus").First(&user).Error; err != nil {
+	if err := u.DB.Where("id = ?", id).First(&user).Error; err != nil {
 		return nil, err
 	} else if user.ID == nil {
 		return nil, errors.New("user not found")
