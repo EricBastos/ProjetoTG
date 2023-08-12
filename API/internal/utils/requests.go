@@ -6,13 +6,9 @@ import (
 )
 
 type UserInformation struct {
-	UserId      string
-	Email       string
-	IsSuperuser bool
-	KYCLevel    int64
-	FirstName   string
-	LastName    string
-	TaxId       string
+	UserId string
+	Email  string
+	TaxId  string
 }
 
 func ExtractPaginationParams(r *http.Request) (pageNum, pageSizeNum int64) {

@@ -55,6 +55,7 @@ func main() {
 	staticDepositDb := database.NewStaticDepositDB(db)
 
 	userHandler := handlers.NewUserHandler(userDb, staticDepositDb)
+	depositHandler := handlers.NewDepositHandler(staticDepositDb)
 
 	userGeneralAuthenticator := middlewares.NewAuthenticator("USER", userDb)
 
@@ -88,46 +89,22 @@ func main() {
 						r.Get("/info", userHandler.GetUser)
 					})
 
-					//r.Route("/mint", func(r chi.Router) {
-					//
-					//	r.Route("/static-pix", func(r chi.Router) {
-					//		r.Group(func(r chi.Router) {
-					//			r.Use(userGeneralAuthenticator.OnlyKycVerified())
-					//			r.Use(middlewares.NewPromHttpMiddleware("/user_deposit_static_pix"))
-					//			r.Post("/", depositHandler.CreateUserStaticPixDeposit)
-					//		})
-					//		r.Group(func(r chi.Router) {
-					//			r.Use(middlewares.NewPromHttpMiddleware("/user_deposit_history"))
-					//			r.Get("/history", userHandler.GetStaticDepositLogs)
-					//		})
-					//	})
-					//
-					//	r.Route("/pix-to-usd", func(r chi.Router) {
-					//		r.Group(func(r chi.Router) {
-					//			r.Use(userGeneralAuthenticator.OnlyKycVerified())
-					//			r.Use(middlewares.NewPromHttpMiddleware("/user_deposit_pix_to_usd"))
-					//			r.Post("/", pixToUsdHandler.GetUserWebsocketToken)
-					//		})
-					//		r.Group(func(r chi.Router) {
-					//			r.Use(middlewares.NewPromHttpMiddleware("/user_deposit_pix_to_usd_history"))
-					//			r.Get("/history", userHandler.GetPixToUsdDepositLogs)
-					//		})
-					//	})
-					//
-					//	//r.Post("/dynamic-pix", depositHandler.CreateDynamicPixDeposit)
-					//	//r.Post("/boleto", depositHandler.CreateBoletoDeposit)
-					//})
+					r.Route("/mint", func(r chi.Router) {
+						r.Route("/static-pix", func(r chi.Router) {
+							r.Group(func(r chi.Router) {
+								r.Post("/", depositHandler.CreatePixDeposit)
+							})
+							//r.Group(func(r chi.Router) {
+							//	r.Get("/history", userHandler.GetStaticDepositLogs)
+							//})
+						})
+					})
 					//
 					//r.Route("/burn", func(r chi.Router) {
-					//
 					//	r.Group(func(r chi.Router) {
-					//		r.Use(middlewares.NewPromHttpMiddleware("/user_transfers_history"))
 					//		r.Get("/history", userHandler.GetTransfersLogs)
 					//	})
-					//
 					//	r.Group(func(r chi.Router) {
-					//		r.Use(userGeneralAuthenticator.OnlyKycVerified())
-					//		r.Use(middlewares.NewPromHttpMiddleware("/user_withdraw"))
 					//		r.Post("/", withdrawHandler.CreateUserWithdraw)
 					//	})
 					//})

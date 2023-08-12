@@ -21,6 +21,11 @@ type DBConf struct {
 	DBPassword string `mapstructure:"PASS_DB"`
 }
 
+type BankWebhookConf struct {
+	BankWebhookHost string `mapstructure:"BANK_WEBHOOK_HOST"`
+	BankWebhookPort string `mapstructure:"BANK_WEBHOOK_PORT"`
+}
+
 type RabbitmqConf struct {
 	RABBITHost     string `mapstructure:"RABBITMQ_HOST"`
 	RABBITPort     string `mapstructure:"RABBITMQ_PORT"`
@@ -44,12 +49,14 @@ type Conf struct {
 	ContractsConf
 	RabbitmqConf
 	JwtConf
+	BankWebhookConf
 }
 
 func LoadConfig(path string) (*Conf, error) {
 	var dbCfg DBConf
 	var rabbitCfg RabbitmqConf
 	var jwtCfg JwtConf
+	var bankWebhookConf BankWebhookConf
 	var walletsConf WalletsConf
 	var contractsConf ContractsConf
 	viper.SetConfigName(".env")
@@ -72,6 +79,10 @@ func LoadConfig(path string) (*Conf, error) {
 	if err != nil {
 		return nil, err
 	}
+	err = viper.Unmarshal(&bankWebhookConf)
+	if err != nil {
+		return nil, err
+	}
 
 	walletsConf.EthereumWalletAddress = viper.GetString("ETH_PUBLIC_KEY")
 	walletsConf.PolygonWalletAddress = viper.GetString("POLYGON_PUBLIC_KEY")
@@ -79,11 +90,12 @@ func LoadConfig(path string) (*Conf, error) {
 	contractsConf.PolygonTokenContract = viper.GetString("POLYGON_CONTRACT_ADDRESS")
 
 	cfg := &Conf{
-		DBConf:        dbCfg,
-		RabbitmqConf:  rabbitCfg,
-		JwtConf:       jwtCfg,
-		WalletsConf:   walletsConf,
-		ContractsConf: contractsConf,
+		DBConf:          dbCfg,
+		RabbitmqConf:    rabbitCfg,
+		JwtConf:         jwtCfg,
+		WalletsConf:     walletsConf,
+		ContractsConf:   contractsConf,
+		BankWebhookConf: bankWebhookConf,
 	}
 	cfg.TokenAuthUser = jwtauth.New("HS256", []byte(cfg.JwtSecret), nil)
 	Cfg = cfg

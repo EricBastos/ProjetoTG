@@ -6,7 +6,6 @@ import (
 )
 
 type StaticDeposit struct {
-	WorkspaceId     string        `json:"-"`
 	Chain           string        `json:"chain"`
 	WalletAddress   string        `json:"walletAddress"`
 	Amount          int           `json:"amount"`
@@ -16,13 +15,9 @@ type StaticDeposit struct {
 	Id              *entities2.ID `json:"id"`
 	CreatedAt       *time.Time    `json:"createdAt"`
 	Status          string        `json:"status"`
-	PayerName       string        `json:"payerName"`
 	UpdatedAt       time.Time     `json:"updatedAt"`
-	ThirdParty      bool          `json:"thirdParty"`
 
 	MintOps []MintOp `json:"mintOps" gorm:"polymorphic:AssociatedBankTransaction"`
-
-	NotifyEmail bool `json:"notifyEmail"`
 }
 
 func NewStaticDeposit(
@@ -32,9 +27,7 @@ func NewStaticDeposit(
 	taxId string,
 	due *time.Time,
 	createdAt *time.Time,
-	chain string,
-	workspaceId string,
-	notifyEmail bool) *StaticDeposit {
+	chain string) *StaticDeposit {
 	id := entities2.NewID()
 	return &StaticDeposit{
 		Chain:           chain,
@@ -46,7 +39,5 @@ func NewStaticDeposit(
 		Due:             due,
 		CreatedAt:       createdAt,
 		Status:          "UNPAID",
-		WorkspaceId:     workspaceId,
-		NotifyEmail:     notifyEmail,
 	}
 }
