@@ -1,0 +1,1 @@
+docker compose --file docker-compose.local.yml --project-name 'stablecoin-service' up -d --build

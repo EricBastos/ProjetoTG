@@ -1,0 +1,38 @@
+version: '3'
+
+services:
+  api:
+    build:
+      context: './'
+      dockerfile: './API/Dockerfile'
+    container_name: 'api'
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 3s
+    ports:
+      - "8080:8080"
+    networks:
+      - mynet
+    depends_on:
+      - postgres
+
+  postgres:
+    image: postgres
+    restart: always
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgrespassword
+    volumes:
+      - db:/var/lib/postgresql/data
+    expose:
+      - '5432'
+    networks:
+      - mynet
+
+networks:
+  mynet:
+    driver: bridge
+
+volumes:
+  db:
