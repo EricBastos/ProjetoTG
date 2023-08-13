@@ -30,7 +30,6 @@ type SmartcontractOperation struct {
 	Tx            string
 	Reason        string
 	CreatedAt     time.Time `json:"createdAt"`
-	IsRetry       bool      `json:"isRetry"`
 
 	Feedback *Feedback `json:"feedback"`
 }
@@ -79,7 +78,7 @@ type MintOp struct {
 	SmartContractOps []SmartcontractOperation `json:"smartContractOps" gorm:"polymorphic:Operation"`
 }
 
-func NewSmartcontractOperation(op, opOrigin, opId string, executed bool, tx, reason string, isRetry bool) *SmartcontractOperation {
+func NewSmartcontractOperation(op, opOrigin, opId string, executed bool, tx, reason string) *SmartcontractOperation {
 	parsedOpId, _ := entities.ParseID(opId)
 	id := entities.NewID()
 	opType := ""
@@ -97,7 +96,6 @@ func NewSmartcontractOperation(op, opOrigin, opId string, executed bool, tx, rea
 		Executed:      executed,
 		Tx:            tx,
 		Reason:        reason,
-		IsRetry:       isRetry,
 	}
 }
 
@@ -209,7 +207,6 @@ type SmartcontractOperationAPI struct {
 	Tx            string       `json:"tx"`
 	Reason        string       `json:"notPostedReason"`
 	CreatedAt     time.Time    `json:"createdAt"`
-	IsRetry       bool         `json:"isRetry"`
 
 	Feedback *FeedbackAPI `json:"feedback" gorm:"foreignKey:SmartcontractOperationId"`
 }

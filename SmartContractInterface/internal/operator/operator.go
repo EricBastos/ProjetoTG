@@ -81,7 +81,6 @@ type FeedbackResponse struct {
 
 type GenericMessage struct {
 	ID                  string      `json:"id"`
-	IsRetry             bool        `json:"isRetry"`
 	Operation           string      `json:"operation"`
 	ResponsibleUser     string      `json:"userId"`
 	OperationOriginType string      `json:"operationOriginType"`
@@ -167,7 +166,7 @@ MainForLoop:
 				err = json.Unmarshal(m.Body, &message)
 				if err != nil {
 					log.Println("Error unmarshalling message. Command ignored")
-					o.nackMsg("", m.DeliveryTag, "", "", false, "", "Error unmarshalling message: "+string(m.Body), false)
+					o.nackMsg("", m.DeliveryTag, "", "", false, "", "Error unmarshalling message: "+string(m.Body))
 					continue
 				}
 				log.Println("Received message:")
@@ -176,7 +175,7 @@ MainForLoop:
 				log.Println(string(dataJson))
 				if err != nil {
 					log.Println("Error encoding operation data", err)
-					o.nackMsg(message.OperationOriginType, m.DeliveryTag, message.Operation, message.ID, false, "", "Error encoding operation data: "+string(m.Body), message.IsRetry)
+					o.nackMsg(message.OperationOriginType, m.DeliveryTag, message.Operation, message.ID, false, "", "Error encoding operation data: "+string(m.Body))
 					continue
 				}
 				ongoingTransaction := &contractInterface.OnGoingTransactionData{
@@ -191,7 +190,7 @@ MainForLoop:
 					err = json.Unmarshal(dataJson, &data)
 					if err != nil {
 						log.Println("Error unmarshalling MINT data. Command ignored", err)
-						o.nackMsg(message.OperationOriginType, m.DeliveryTag, message.Operation, message.ID, false, "", "Error unmarshalling MINT data", message.IsRetry)
+						o.nackMsg(message.OperationOriginType, m.DeliveryTag, message.Operation, message.ID, false, "", "Error unmarshalling MINT data")
 						continue
 					}
 					txsWithError = o.Mint(&data, ongoingTransaction)
@@ -200,7 +199,7 @@ MainForLoop:
 					err = json.Unmarshal(dataJson, &data)
 					if err != nil {
 						log.Println("Error unmarshalling BURN data. Command ignored", err)
-						o.nackMsg(message.OperationOriginType, m.DeliveryTag, message.Operation, message.ID, false, "", "Error unmarshalling BURN data", message.IsRetry)
+						o.nackMsg(message.OperationOriginType, m.DeliveryTag, message.Operation, message.ID, false, "", "Error unmarshalling BURN data")
 						continue
 					}
 					txsWithError = o.Burn(&data, ongoingTransaction)
@@ -217,7 +216,7 @@ MainForLoop:
 
 					if err != nil {
 						log.Println("Operation failed:", message.Operation, err.Error())
-						operation := entities.NewSmartcontractOperation(message.Operation, message.OperationOriginType, message.ID, false, "", err.Error(), message.IsRetry)
+						operation := entities.NewSmartcontractOperation(message.Operation, message.OperationOriginType, message.ID, false, "", err.Error())
 						o.writeOpInDB(operation)
 
 						resp := FeedbackResponse{
@@ -231,7 +230,7 @@ MainForLoop:
 						o.publishResult(resp, message.Operation)
 					} else {
 						log.Println("Posted transaction:", tx.Hash)
-						operation := entities.NewSmartcontractOperation(res.OperationName, message.OperationOriginType, message.ID, true, tx.Hash, "", message.IsRetry)
+						operation := entities.NewSmartcontractOperation(res.OperationName, message.OperationOriginType, message.ID, true, tx.Hash, "")
 						parsedId, _ := entities2.ParseID(res.SmartcontractCallId)
 						operation.ID = &parsedId
 						o.writeOpInDB(operation)
@@ -411,12 +410,12 @@ func (o *Operator) publishResult(resp FeedbackResponse, op string) {
 	}
 }
 
-func (o *Operator) nackMsg(origin string, tag uint64, op, id string, exec bool, tx, reason string, isRetry bool) {
+func (o *Operator) nackMsg(origin string, tag uint64, op, id string, exec bool, tx, reason string) {
 	err := o.rabbit.Ch.Nack(tag, false, false)
 	if err != nil {
 		log.Println("Error: could not nack message.")
 	} else {
-		operation := entities.NewSmartcontractOperation(op, origin, id, exec, tx, reason, isRetry)
+		operation := entities.NewSmartcontractOperation(op, origin, id, exec, tx, reason)
 		go o.writeOpInDB(operation)
 	}
 }

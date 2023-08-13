@@ -2,6 +2,7 @@ package userUsecases
 
 import (
 	"errors"
+	"github.com/EricBastos/ProjetoTG/API/configs"
 	"github.com/EricBastos/ProjetoTG/API/internal/dtos"
 	"github.com/EricBastos/ProjetoTG/API/internal/grpcClient"
 	"github.com/EricBastos/ProjetoTG/API/internal/infra/rabbitmqClient"
@@ -9,6 +10,8 @@ import (
 	"github.com/EricBastos/ProjetoTG/Library/database"
 	"github.com/EricBastos/ProjetoTG/Library/entities"
 	entities2 "github.com/EricBastos/ProjetoTG/Library/pkg/entities"
+	"log"
+	"math/big"
 	"net/http"
 )
 
@@ -53,11 +56,28 @@ func (u *CreateUserWithdrawUsecase) createAsUser(input *dtos.CreateUserWithdrawI
 
 	switch input.Chain {
 	case "Ethereum":
+		balance, balErr := grpcClient.EthereumService.GetBalance(configs.Cfg.EthereumTokenContract, input.WalletAddress)
+		if balErr != nil {
+			return "", errors.New(utils.InternalError), http.StatusInternalServerError
+		}
+		bigInputAmount := new(big.Int).Mul(big.NewInt(int64(input.Amount)), big.NewInt(10^16))
+		if balance.Cmp(bigInputAmount) < 0 {
+			return "", errors.New("wallet balance must be greater than burn amount"), http.StatusBadRequest
+		}
 		waiting, err = grpcClient.EthereumService.IsWaitingPermit(input.WalletAddress)
 		if err != nil {
 			waiting = true
 		}
 	case "Polygon":
+		balance, balErr := grpcClient.PolygonService.GetBalance(configs.Cfg.PolygonTokenContract, input.WalletAddress)
+		if balErr != nil {
+			return "", errors.New(utils.InternalError), http.StatusInternalServerError
+		}
+		log.Println(balance)
+		bigInputAmount := new(big.Int).Mul(big.NewInt(int64(input.Amount)), big.NewInt(10000000000000000))
+		if balance.Cmp(bigInputAmount) < 0 {
+			return "", errors.New("wallet balance must be greater than burn amount"), http.StatusBadRequest
+		}
 		waiting, err = grpcClient.PolygonService.IsWaitingPermit(input.WalletAddress)
 		if err != nil {
 			waiting = true

@@ -107,7 +107,6 @@ func (l *RabbitMQClient) CallSmartcontract(op entities.SmartContractOp, opOrigin
 
 	type OpToSendStruct struct {
 		ID                  string      `json:"id"`
-		IsRetry             bool        `json:"isRetry"`
 		UserId              string      `json:"userId"`
 		WorkspaceId         string      `json:"workspaceId"`
 		OperationOriginType string      `json:"operationOriginType"`
@@ -129,7 +128,6 @@ func (l *RabbitMQClient) CallSmartcontract(op entities.SmartContractOp, opOrigin
 
 	opToSend := OpToSendStruct{
 		ID:                  op.GetID().String(),
-		IsRetry:             false,
 		Operation:           op.GetOperationType(),
 		Data:                opData,
 		UserId:              userIdString,

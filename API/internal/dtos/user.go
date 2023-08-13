@@ -22,6 +22,7 @@ type GetJwtOutput struct {
 }
 
 type GetUserOutput struct {
+	Name      string    `json:"name"`
 	Email     string    `json:"email"`
 	TaxId     string    `json:"taxId"`
 	CreatedAt time.Time `json:"createdAt"`

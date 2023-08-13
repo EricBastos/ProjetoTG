@@ -30,7 +30,7 @@ func VerifyBurnPermit(from, chain string, amountInt int, permit *entities.Permit
 		var amount = new(big.Int)
 		amount = amount.Mul(big.NewInt(int64(amountInt)), big.NewInt(10000000000000000))
 		result = ValidatePermit(
-			"BRLA Token",
+			"StableCoin",
 			"1",
 			false,
 			common.HexToAddress(from),
@@ -43,7 +43,7 @@ func VerifyBurnPermit(from, chain string, amountInt int, permit *entities.Permit
 		var amount = new(big.Int)
 		amount = amount.Mul(big.NewInt(int64(amountInt)), big.NewInt(10000000000000000))
 		result = ValidatePermit(
-			"BRLA Token",
+			"StableCoin",
 			"1",
 			false,
 			common.HexToAddress(from),

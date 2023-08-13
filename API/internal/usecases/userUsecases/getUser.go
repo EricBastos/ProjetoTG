@@ -28,6 +28,7 @@ func (u *GetUserUsecase) GetUser() (*dtos.GetUserOutput, error, int) {
 	}
 
 	return &dtos.GetUserOutput{
+		Name:      user.Name,
 		Email:     user.Email,
 		TaxId:     user.TaxId,
 		CreatedAt: user.CreatedAt,
