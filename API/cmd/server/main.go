@@ -79,7 +79,7 @@ func main() {
 	staticDepositDb := database.NewStaticDepositDB(db)
 	burnOpsDb := database.NewBurnOperationsDB(db)
 
-	userHandler := handlers.NewUserHandler(userDb, staticDepositDb)
+	userHandler := handlers.NewUserHandler(userDb, staticDepositDb, burnOpsDb)
 	depositHandler := handlers.NewDepositHandler(staticDepositDb)
 	withdrawHandler := handlers.NewWithdrawHandler(burnOpsDb, rabbitClient)
 
@@ -120,9 +120,9 @@ func main() {
 							r.Group(func(r chi.Router) {
 								r.Post("/", depositHandler.CreatePixDeposit)
 							})
-							//r.Group(func(r chi.Router) {
-							//	r.Get("/history", userHandler.GetStaticDepositLogs)
-							//})
+							r.Group(func(r chi.Router) {
+								r.Get("/history", userHandler.GetStaticDepositLogs)
+							})
 						})
 					})
 
@@ -130,9 +130,9 @@ func main() {
 						r.Group(func(r chi.Router) {
 							r.Post("/", withdrawHandler.CreateUserWithdraw)
 						})
-						//r.Group(func(r chi.Router) {
-						//	r.Get("/history", userHandler.GetTransfersLogs)
-						//})
+						r.Group(func(r chi.Router) {
+							r.Get("/history", userHandler.GetTransfersLogs)
+						})
 					})
 
 				})

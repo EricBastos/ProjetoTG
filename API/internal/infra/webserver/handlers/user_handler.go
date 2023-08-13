@@ -5,8 +5,8 @@ import (
 	"errors"
 	"github.com/EricBastos/ProjetoTG/API/internal/dtos"
 	"github.com/EricBastos/ProjetoTG/API/internal/usecases/userUsecases"
+	"github.com/EricBastos/ProjetoTG/API/internal/utils"
 	"github.com/EricBastos/ProjetoTG/Library/database"
-	"github.com/EricBastos/ProjetoTG/Library/utils"
 	"github.com/klassmann/cpfcnpj"
 	"net/http"
 )
@@ -14,14 +14,17 @@ import (
 type UserHandler struct {
 	userDb          database.UserInterface
 	staticDepositDb database.StaticDepositInterface
+	burnOpsDb       database.BurnOpInterface
 }
 
 func NewUserHandler(
 	userDb database.UserInterface,
-	staticDepositDb database.StaticDepositInterface) *UserHandler {
+	staticDepositDb database.StaticDepositInterface,
+	burnOpsDb database.BurnOpInterface) *UserHandler {
 	return &UserHandler{
 		userDb:          userDb,
 		staticDepositDb: staticDepositDb,
+		burnOpsDb:       burnOpsDb,
 	}
 }
 
@@ -148,4 +151,62 @@ func validateLoginInput(input *dtos.GetJwtInput) error {
 		return errors.New(utils.MissingPassword)
 	}
 	return nil
+}
+
+func (h *UserHandler) GetStaticDepositLogs(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	pageNum, pageSizeNum := utils.ExtractPaginationParams(r)
+	input := dtos.GetDepositsLogsInput{
+		Page:     int(pageNum),
+		PageSize: int(pageSizeNum),
+	}
+	taxId := r.Context().Value("taxId").(string)
+	userId := r.Context().Value("subject").(string)
+	usecase := userUsecases.NewGetStaticDepositsUsecase(
+		taxId,
+		userId,
+		h.staticDepositDb,
+	)
+	output, err, code := usecase.GetStaticDepositsLogs(&input)
+	if err != nil {
+		w.WriteHeader(code)
+		_ = json.NewEncoder(w).Encode(struct {
+			Error string `json:"error"`
+		}{
+			Error: err.Error(),
+		})
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+	_ = json.NewEncoder(w).Encode(output)
+}
+
+func (h *UserHandler) GetTransfersLogs(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	pageNum, pageSizeNum := utils.ExtractPaginationParams(r)
+	input := dtos.GetTransfersLogsInput{
+		Page:     int(pageNum),
+		PageSize: int(pageSizeNum),
+	}
+	taxId := r.Context().Value("taxId").(string)
+	userId := r.Context().Value("subject").(string)
+
+	usecase := userUsecases.NewGetTransfersLogsUsecase(
+		taxId,
+		userId,
+		h.burnOpsDb,
+	)
+	output, err, code := usecase.GetTransfersLogs(&input)
+	if err != nil {
+		w.WriteHeader(code)
+		_ = json.NewEncoder(w).Encode(struct {
+			Error string `json:"error"`
+		}{
+			Error: err.Error(),
+		})
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+	_ = json.NewEncoder(w).Encode(output)
 }

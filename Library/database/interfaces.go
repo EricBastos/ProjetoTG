@@ -36,12 +36,14 @@ type StaticDepositInterface interface {
 	FindById(id string) (*entities.StaticDeposit, error)
 	FindUnpaidByTaxIdAndAmount(taxId string, amount int) (*entities.StaticDeposit, error)
 	FindUnpaidByTaxId(taxId string) (*entities.StaticDeposit, error)
+	GetLogs(taxId, responsibleUser string, page, pageSize int) ([]entities.StaticDepositAPI, error)
 }
 
 type BurnOpInterface interface {
 	Create(op *entities.BurnOp) error
 	CreateEmit(op *entities.BurnOp, f func() error) error
 	Get(id string) (*entities.BurnOp, error)
+	GetLogs(docData, responsibleUser string, page, pageSize int) ([]entities.BurnOpAPI, error)
 }
 
 type TransferInterface interface {

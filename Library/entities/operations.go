@@ -116,15 +116,6 @@ func NewBurnWithPermit(walletAddress string, amount int, userName, userTaxId, ac
 	}
 }
 
-func NewBurnFromJson(jsonData []byte) (*BurnOp, error) {
-	var burnOp BurnOp
-	err := json.Unmarshal(jsonData, &burnOp)
-	if err != nil {
-		return nil, err
-	}
-	return &burnOp, nil
-}
-
 func (op *BurnOp) GetDataInJson() string {
 	data, _ := json.Marshal(op)
 	return string(data)
@@ -158,14 +149,6 @@ func NewMint(walletAddress string, amount int, chain, reason string, responsible
 		ResponsibleUser:             responsible,
 	}
 }
-func NewMintFromJson(jsonData []byte) (*MintOp, error) {
-	var mintOp MintOp
-	err := json.Unmarshal(jsonData, &mintOp)
-	if err != nil {
-		return nil, err
-	}
-	return &mintOp, nil
-}
 
 func (op *MintOp) GetDataInJson() string {
 	data, _ := json.Marshal(op)
@@ -197,7 +180,6 @@ type BurnOpAPI struct {
 	SmartContractOps []SmartcontractOperationAPI `json:"smartContractOps" gorm:"polymorphic:Operation"`
 	Transfers        []TransferAPI               `json:"transfers" gorm:"foreignKey:AssociatedBurnId"`
 	CreatedAt        time.Time                   `json:"createdAt"`
-	Fee              int                         `json:"fee"`
 }
 
 type SmartcontractOperationAPI struct {
@@ -227,15 +209,13 @@ type TransferAPI struct {
 	BranchCode    string                `json:"branchCode"`
 	AccountNumber string                `json:"accountNumber"`
 	Id            string                `json:"id"`
-	CreatedAt     *time.Time            `json:"createdAt"`
+	CreatedAt     time.Time             `json:"createdAt"`
 	Feedbacks     []TransferFeedbackAPI `json:"feedbacks" gorm:"foreignKey:TransferId"`
 }
 
 type TransferFeedbackAPI struct {
-	ID                *entities.ID `json:"id"`
-	TransferStatus    string       `json:"transferStatus"`
-	TransferUpdatedAt *time.Time   `json:"updatedAt"`
-	LogType           string       `json:"logType"`
+	ID        *entities.ID `json:"id"`
+	CreatedAt time.Time    `json:"createdAt"`
 }
 
 type StaticDepositAPI struct {
@@ -247,7 +227,6 @@ type StaticDepositAPI struct {
 	Id            *entities.ID `json:"id"`
 	CreatedAt     *time.Time   `json:"createdAt"`
 	Status        string       `json:"status"`
-	PayerName     string       `json:"payerName"`
 	UpdatedAt     time.Time    `json:"updatedAt"`
 
 	MintOps []MintOpAPI `json:"mintOps"`
@@ -258,6 +237,5 @@ type MintOpAPI struct {
 	Amount           int                         `json:"amount"`
 	Reason           string                      `json:"createdReason"`
 	CreatedAt        time.Time                   `json:"createdAt"`
-	Fee              int                         `json:"fee"`
 	SmartContractOps []SmartcontractOperationAPI `json:"smartContractOps"`
 }
