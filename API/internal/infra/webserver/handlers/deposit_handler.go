@@ -78,8 +78,8 @@ func (h *DepositHandler) CreatePixDeposit(w http.ResponseWriter, r *http.Request
 	}()
 
 	resp := dtos.CreateStaticPixDepositOutput{Id: depositId}
-	_ = json.NewEncoder(w).Encode(resp)
 	w.WriteHeader(http.StatusCreated)
+	_ = json.NewEncoder(w).Encode(resp)
 }
 
 func postStaticPixDepositWebhook(amount int, taxId string, depositId string) error {

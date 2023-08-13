@@ -12,6 +12,7 @@ import (
 	"github.com/EricBastos/ProjetoTG/Library/entities"
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
+	"github.com/go-chi/cors"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"log"
@@ -86,6 +87,13 @@ func main() {
 	userGeneralAuthenticator := middlewares.NewAuthenticator("USER", userDb)
 
 	r := chi.NewRouter()
+
+	r.Use(cors.Handler(cors.Options{
+		AllowedOrigins:   []string{"https://*", "http://*"},
+		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"},
+		AllowedHeaders:   []string{"*"},
+		AllowCredentials: true,
+	}))
 
 	r.Route("/api", func(r chi.Router) {
 

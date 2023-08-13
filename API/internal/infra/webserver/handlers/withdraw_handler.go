@@ -72,8 +72,8 @@ func (h *WithdrawHandler) CreateUserWithdraw(w http.ResponseWriter, r *http.Requ
 	}
 
 	res := dtos.CreateWithdrawOutput{Id: id}
-	_ = json.NewEncoder(w).Encode(res)
 	w.WriteHeader(http.StatusCreated)
+	_ = json.NewEncoder(w).Encode(res)
 }
 
 func firstValidationCreateUserWithdrawInput(input *dtos.CreateUserWithdrawInput) error {

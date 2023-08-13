@@ -3,12 +3,14 @@ package handlers
 import (
 	"encoding/json"
 	"errors"
+	"github.com/EricBastos/ProjetoTG/API/configs"
 	"github.com/EricBastos/ProjetoTG/API/internal/dtos"
 	"github.com/EricBastos/ProjetoTG/API/internal/usecases/userUsecases"
 	"github.com/EricBastos/ProjetoTG/API/internal/utils"
 	"github.com/EricBastos/ProjetoTG/Library/database"
 	"github.com/klassmann/cpfcnpj"
 	"net/http"
+	"time"
 )
 
 type UserHandler struct {
@@ -139,6 +141,15 @@ func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 		})
 		return
 	}
+	http.SetCookie(w, &http.Cookie{
+		Name:     "jwt",
+		Value:    output.AccessToken,
+		Expires:  time.Now().Add(time.Second * time.Duration(configs.Cfg.JwtExpiration)),
+		MaxAge:   configs.Cfg.JwtExpiration,
+		Secure:   true,
+		HttpOnly: true,
+		SameSite: http.SameSiteNoneMode,
+	})
 	w.WriteHeader(http.StatusOK)
 	_ = json.NewEncoder(w).Encode(output)
 }

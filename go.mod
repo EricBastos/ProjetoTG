@@ -6,11 +6,13 @@ require (
 	github.com/cenkalti/backoff/v4 v4.2.1
 	github.com/ethereum/go-ethereum v1.12.2
 	github.com/go-chi/chi v1.5.1
+	github.com/go-chi/cors v1.2.1
 	github.com/go-chi/jwtauth v1.2.0
 	github.com/google/uuid v1.3.0
 	github.com/klassmann/cpfcnpj v0.0.0-20200907140233-a595c5fd8de1
 	github.com/lestrrat-go/jwx v1.2.26
 	github.com/rabbitmq/amqp091-go v1.8.1
+	github.com/rs/cors v1.7.0
 	github.com/spf13/viper v1.16.0
 	golang.org/x/crypto v0.12.0
 	google.golang.org/grpc v1.55.0
