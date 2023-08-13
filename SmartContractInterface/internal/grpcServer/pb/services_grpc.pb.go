@@ -18,171 +18,10 @@ import (
 // Requires gRPC-Go v1.32.0 or later.
 const _ = grpc.SupportPackageIsVersion7
 
-// AlgorandServiceClient is the client API for AlgorandService service.
-//
-// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
-type AlgorandServiceClient interface {
-	AssetInfo(ctx context.Context, in *WalletAddress, opts ...grpc.CallOption) (*AssetInfoResponse, error)
-	EstimateGasPrice(ctx context.Context, in *EstimateGasPriceInput, opts ...grpc.CallOption) (*EstimateGasPriceOutput, error)
-	IsWaitingPermit(ctx context.Context, in *WalletAddress, opts ...grpc.CallOption) (*IsWaitingPermitOutput, error)
-}
-
-type algorandServiceClient struct {
-	cc grpc.ClientConnInterface
-}
-
-func NewAlgorandServiceClient(cc grpc.ClientConnInterface) AlgorandServiceClient {
-	return &algorandServiceClient{cc}
-}
-
-func (c *algorandServiceClient) AssetInfo(ctx context.Context, in *WalletAddress, opts ...grpc.CallOption) (*AssetInfoResponse, error) {
-	out := new(AssetInfoResponse)
-	err := c.cc.Invoke(ctx, "/pb.AlgorandService/AssetInfo", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *algorandServiceClient) EstimateGasPrice(ctx context.Context, in *EstimateGasPriceInput, opts ...grpc.CallOption) (*EstimateGasPriceOutput, error) {
-	out := new(EstimateGasPriceOutput)
-	err := c.cc.Invoke(ctx, "/pb.AlgorandService/EstimateGasPrice", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *algorandServiceClient) IsWaitingPermit(ctx context.Context, in *WalletAddress, opts ...grpc.CallOption) (*IsWaitingPermitOutput, error) {
-	out := new(IsWaitingPermitOutput)
-	err := c.cc.Invoke(ctx, "/pb.AlgorandService/IsWaitingPermit", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-// AlgorandServiceServer is the server API for AlgorandService service.
-// All implementations must embed UnimplementedAlgorandServiceServer
-// for forward compatibility
-type AlgorandServiceServer interface {
-	AssetInfo(context.Context, *WalletAddress) (*AssetInfoResponse, error)
-	EstimateGasPrice(context.Context, *EstimateGasPriceInput) (*EstimateGasPriceOutput, error)
-	IsWaitingPermit(context.Context, *WalletAddress) (*IsWaitingPermitOutput, error)
-	mustEmbedUnimplementedAlgorandServiceServer()
-}
-
-// UnimplementedAlgorandServiceServer must be embedded to have forward compatible implementations.
-type UnimplementedAlgorandServiceServer struct {
-}
-
-func (UnimplementedAlgorandServiceServer) AssetInfo(context.Context, *WalletAddress) (*AssetInfoResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method AssetInfo not implemented")
-}
-func (UnimplementedAlgorandServiceServer) EstimateGasPrice(context.Context, *EstimateGasPriceInput) (*EstimateGasPriceOutput, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method EstimateGasPrice not implemented")
-}
-func (UnimplementedAlgorandServiceServer) IsWaitingPermit(context.Context, *WalletAddress) (*IsWaitingPermitOutput, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method IsWaitingPermit not implemented")
-}
-func (UnimplementedAlgorandServiceServer) mustEmbedUnimplementedAlgorandServiceServer() {}
-
-// UnsafeAlgorandServiceServer may be embedded to opt out of forward compatibility for this service.
-// Use of this interface is not recommended, as added methods to AlgorandServiceServer will
-// result in compilation errors.
-type UnsafeAlgorandServiceServer interface {
-	mustEmbedUnimplementedAlgorandServiceServer()
-}
-
-func RegisterAlgorandServiceServer(s grpc.ServiceRegistrar, srv AlgorandServiceServer) {
-	s.RegisterService(&AlgorandService_ServiceDesc, srv)
-}
-
-func _AlgorandService_AssetInfo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(WalletAddress)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(AlgorandServiceServer).AssetInfo(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/pb.AlgorandService/AssetInfo",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AlgorandServiceServer).AssetInfo(ctx, req.(*WalletAddress))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _AlgorandService_EstimateGasPrice_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(EstimateGasPriceInput)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(AlgorandServiceServer).EstimateGasPrice(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/pb.AlgorandService/EstimateGasPrice",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AlgorandServiceServer).EstimateGasPrice(ctx, req.(*EstimateGasPriceInput))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _AlgorandService_IsWaitingPermit_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(WalletAddress)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(AlgorandServiceServer).IsWaitingPermit(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/pb.AlgorandService/IsWaitingPermit",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AlgorandServiceServer).IsWaitingPermit(ctx, req.(*WalletAddress))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-// AlgorandService_ServiceDesc is the grpc.ServiceDesc for AlgorandService service.
-// It's only intended for direct use with grpc.RegisterService,
-// and not to be introspected or modified (even as a copy)
-var AlgorandService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "pb.AlgorandService",
-	HandlerType: (*AlgorandServiceServer)(nil),
-	Methods: []grpc.MethodDesc{
-		{
-			MethodName: "AssetInfo",
-			Handler:    _AlgorandService_AssetInfo_Handler,
-		},
-		{
-			MethodName: "EstimateGasPrice",
-			Handler:    _AlgorandService_EstimateGasPrice_Handler,
-		},
-		{
-			MethodName: "IsWaitingPermit",
-			Handler:    _AlgorandService_IsWaitingPermit_Handler,
-		},
-	},
-	Streams:  []grpc.StreamDesc{},
-	Metadata: "proto/services.proto",
-}
-
 // EthereumServiceClient is the client API for EthereumService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type EthereumServiceClient interface {
-	IsBlackListed(ctx context.Context, in *WalletAddress, opts ...grpc.CallOption) (*BlacklistResponse, error)
-	EstimateGasPrice(ctx context.Context, in *EstimateGasPriceInput, opts ...grpc.CallOption) (*EstimateGasPriceOutput, error)
-	TransferUsdc(ctx context.Context, in *TransferUsdcInput, opts ...grpc.CallOption) (*TransferUsdcOutput, error)
 	IsWaitingPermit(ctx context.Context, in *WalletAddress, opts ...grpc.CallOption) (*IsWaitingPermitOutput, error)
 	GetBalance(ctx context.Context, in *GetBalanceInput, opts ...grpc.CallOption) (*GetBalanceOutput, error)
 	GetAllowance(ctx context.Context, in *GetAllowanceInput, opts ...grpc.CallOption) (*GetAllowanceOutput, error)
@@ -194,33 +33,6 @@ type ethereumServiceClient struct {
 
 func NewEthereumServiceClient(cc grpc.ClientConnInterface) EthereumServiceClient {
 	return &ethereumServiceClient{cc}
-}
-
-func (c *ethereumServiceClient) IsBlackListed(ctx context.Context, in *WalletAddress, opts ...grpc.CallOption) (*BlacklistResponse, error) {
-	out := new(BlacklistResponse)
-	err := c.cc.Invoke(ctx, "/pb.EthereumService/IsBlackListed", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *ethereumServiceClient) EstimateGasPrice(ctx context.Context, in *EstimateGasPriceInput, opts ...grpc.CallOption) (*EstimateGasPriceOutput, error) {
-	out := new(EstimateGasPriceOutput)
-	err := c.cc.Invoke(ctx, "/pb.EthereumService/EstimateGasPrice", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *ethereumServiceClient) TransferUsdc(ctx context.Context, in *TransferUsdcInput, opts ...grpc.CallOption) (*TransferUsdcOutput, error) {
-	out := new(TransferUsdcOutput)
-	err := c.cc.Invoke(ctx, "/pb.EthereumService/TransferUsdc", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
 }
 
 func (c *ethereumServiceClient) IsWaitingPermit(ctx context.Context, in *WalletAddress, opts ...grpc.CallOption) (*IsWaitingPermitOutput, error) {
@@ -254,9 +66,6 @@ func (c *ethereumServiceClient) GetAllowance(ctx context.Context, in *GetAllowan
 // All implementations must embed UnimplementedEthereumServiceServer
 // for forward compatibility
 type EthereumServiceServer interface {
-	IsBlackListed(context.Context, *WalletAddress) (*BlacklistResponse, error)
-	EstimateGasPrice(context.Context, *EstimateGasPriceInput) (*EstimateGasPriceOutput, error)
-	TransferUsdc(context.Context, *TransferUsdcInput) (*TransferUsdcOutput, error)
 	IsWaitingPermit(context.Context, *WalletAddress) (*IsWaitingPermitOutput, error)
 	GetBalance(context.Context, *GetBalanceInput) (*GetBalanceOutput, error)
 	GetAllowance(context.Context, *GetAllowanceInput) (*GetAllowanceOutput, error)
@@ -267,15 +76,6 @@ type EthereumServiceServer interface {
 type UnimplementedEthereumServiceServer struct {
 }
 
-func (UnimplementedEthereumServiceServer) IsBlackListed(context.Context, *WalletAddress) (*BlacklistResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method IsBlackListed not implemented")
-}
-func (UnimplementedEthereumServiceServer) EstimateGasPrice(context.Context, *EstimateGasPriceInput) (*EstimateGasPriceOutput, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method EstimateGasPrice not implemented")
-}
-func (UnimplementedEthereumServiceServer) TransferUsdc(context.Context, *TransferUsdcInput) (*TransferUsdcOutput, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method TransferUsdc not implemented")
-}
 func (UnimplementedEthereumServiceServer) IsWaitingPermit(context.Context, *WalletAddress) (*IsWaitingPermitOutput, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method IsWaitingPermit not implemented")
 }
@@ -296,60 +96,6 @@ type UnsafeEthereumServiceServer interface {
 
 func RegisterEthereumServiceServer(s grpc.ServiceRegistrar, srv EthereumServiceServer) {
 	s.RegisterService(&EthereumService_ServiceDesc, srv)
-}
-
-func _EthereumService_IsBlackListed_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(WalletAddress)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(EthereumServiceServer).IsBlackListed(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/pb.EthereumService/IsBlackListed",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(EthereumServiceServer).IsBlackListed(ctx, req.(*WalletAddress))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _EthereumService_EstimateGasPrice_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(EstimateGasPriceInput)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(EthereumServiceServer).EstimateGasPrice(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/pb.EthereumService/EstimateGasPrice",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(EthereumServiceServer).EstimateGasPrice(ctx, req.(*EstimateGasPriceInput))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _EthereumService_TransferUsdc_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(TransferUsdcInput)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(EthereumServiceServer).TransferUsdc(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/pb.EthereumService/TransferUsdc",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(EthereumServiceServer).TransferUsdc(ctx, req.(*TransferUsdcInput))
-	}
-	return interceptor(ctx, in, info, handler)
 }
 
 func _EthereumService_IsWaitingPermit_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -414,18 +160,6 @@ var EthereumService_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*EthereumServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "IsBlackListed",
-			Handler:    _EthereumService_IsBlackListed_Handler,
-		},
-		{
-			MethodName: "EstimateGasPrice",
-			Handler:    _EthereumService_EstimateGasPrice_Handler,
-		},
-		{
-			MethodName: "TransferUsdc",
-			Handler:    _EthereumService_TransferUsdc_Handler,
-		},
-		{
 			MethodName: "IsWaitingPermit",
 			Handler:    _EthereumService_IsWaitingPermit_Handler,
 		},
@@ -442,283 +176,13 @@ var EthereumService_ServiceDesc = grpc.ServiceDesc{
 	Metadata: "proto/services.proto",
 }
 
-// OkcServiceClient is the client API for OkcService service.
-//
-// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
-type OkcServiceClient interface {
-	IsBlackListed(ctx context.Context, in *WalletAddress, opts ...grpc.CallOption) (*BlacklistResponse, error)
-	EstimateGasPrice(ctx context.Context, in *EstimateGasPriceInput, opts ...grpc.CallOption) (*EstimateGasPriceOutput, error)
-	TransferUsdc(ctx context.Context, in *TransferUsdcInput, opts ...grpc.CallOption) (*TransferUsdcOutput, error)
-	IsWaitingPermit(ctx context.Context, in *WalletAddress, opts ...grpc.CallOption) (*IsWaitingPermitOutput, error)
-	GetBalance(ctx context.Context, in *GetBalanceInput, opts ...grpc.CallOption) (*GetBalanceOutput, error)
-	GetAllowance(ctx context.Context, in *GetAllowanceInput, opts ...grpc.CallOption) (*GetAllowanceOutput, error)
-}
-
-type okcServiceClient struct {
-	cc grpc.ClientConnInterface
-}
-
-func NewOkcServiceClient(cc grpc.ClientConnInterface) OkcServiceClient {
-	return &okcServiceClient{cc}
-}
-
-func (c *okcServiceClient) IsBlackListed(ctx context.Context, in *WalletAddress, opts ...grpc.CallOption) (*BlacklistResponse, error) {
-	out := new(BlacklistResponse)
-	err := c.cc.Invoke(ctx, "/pb.OkcService/IsBlackListed", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *okcServiceClient) EstimateGasPrice(ctx context.Context, in *EstimateGasPriceInput, opts ...grpc.CallOption) (*EstimateGasPriceOutput, error) {
-	out := new(EstimateGasPriceOutput)
-	err := c.cc.Invoke(ctx, "/pb.OkcService/EstimateGasPrice", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *okcServiceClient) TransferUsdc(ctx context.Context, in *TransferUsdcInput, opts ...grpc.CallOption) (*TransferUsdcOutput, error) {
-	out := new(TransferUsdcOutput)
-	err := c.cc.Invoke(ctx, "/pb.OkcService/TransferUsdc", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *okcServiceClient) IsWaitingPermit(ctx context.Context, in *WalletAddress, opts ...grpc.CallOption) (*IsWaitingPermitOutput, error) {
-	out := new(IsWaitingPermitOutput)
-	err := c.cc.Invoke(ctx, "/pb.OkcService/IsWaitingPermit", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *okcServiceClient) GetBalance(ctx context.Context, in *GetBalanceInput, opts ...grpc.CallOption) (*GetBalanceOutput, error) {
-	out := new(GetBalanceOutput)
-	err := c.cc.Invoke(ctx, "/pb.OkcService/GetBalance", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *okcServiceClient) GetAllowance(ctx context.Context, in *GetAllowanceInput, opts ...grpc.CallOption) (*GetAllowanceOutput, error) {
-	out := new(GetAllowanceOutput)
-	err := c.cc.Invoke(ctx, "/pb.OkcService/GetAllowance", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-// OkcServiceServer is the server API for OkcService service.
-// All implementations must embed UnimplementedOkcServiceServer
-// for forward compatibility
-type OkcServiceServer interface {
-	IsBlackListed(context.Context, *WalletAddress) (*BlacklistResponse, error)
-	EstimateGasPrice(context.Context, *EstimateGasPriceInput) (*EstimateGasPriceOutput, error)
-	TransferUsdc(context.Context, *TransferUsdcInput) (*TransferUsdcOutput, error)
-	IsWaitingPermit(context.Context, *WalletAddress) (*IsWaitingPermitOutput, error)
-	GetBalance(context.Context, *GetBalanceInput) (*GetBalanceOutput, error)
-	GetAllowance(context.Context, *GetAllowanceInput) (*GetAllowanceOutput, error)
-	mustEmbedUnimplementedOkcServiceServer()
-}
-
-// UnimplementedOkcServiceServer must be embedded to have forward compatible implementations.
-type UnimplementedOkcServiceServer struct {
-}
-
-func (UnimplementedOkcServiceServer) IsBlackListed(context.Context, *WalletAddress) (*BlacklistResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method IsBlackListed not implemented")
-}
-func (UnimplementedOkcServiceServer) EstimateGasPrice(context.Context, *EstimateGasPriceInput) (*EstimateGasPriceOutput, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method EstimateGasPrice not implemented")
-}
-func (UnimplementedOkcServiceServer) TransferUsdc(context.Context, *TransferUsdcInput) (*TransferUsdcOutput, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method TransferUsdc not implemented")
-}
-func (UnimplementedOkcServiceServer) IsWaitingPermit(context.Context, *WalletAddress) (*IsWaitingPermitOutput, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method IsWaitingPermit not implemented")
-}
-func (UnimplementedOkcServiceServer) GetBalance(context.Context, *GetBalanceInput) (*GetBalanceOutput, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetBalance not implemented")
-}
-func (UnimplementedOkcServiceServer) GetAllowance(context.Context, *GetAllowanceInput) (*GetAllowanceOutput, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetAllowance not implemented")
-}
-func (UnimplementedOkcServiceServer) mustEmbedUnimplementedOkcServiceServer() {}
-
-// UnsafeOkcServiceServer may be embedded to opt out of forward compatibility for this service.
-// Use of this interface is not recommended, as added methods to OkcServiceServer will
-// result in compilation errors.
-type UnsafeOkcServiceServer interface {
-	mustEmbedUnimplementedOkcServiceServer()
-}
-
-func RegisterOkcServiceServer(s grpc.ServiceRegistrar, srv OkcServiceServer) {
-	s.RegisterService(&OkcService_ServiceDesc, srv)
-}
-
-func _OkcService_IsBlackListed_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(WalletAddress)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(OkcServiceServer).IsBlackListed(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/pb.OkcService/IsBlackListed",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(OkcServiceServer).IsBlackListed(ctx, req.(*WalletAddress))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _OkcService_EstimateGasPrice_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(EstimateGasPriceInput)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(OkcServiceServer).EstimateGasPrice(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/pb.OkcService/EstimateGasPrice",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(OkcServiceServer).EstimateGasPrice(ctx, req.(*EstimateGasPriceInput))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _OkcService_TransferUsdc_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(TransferUsdcInput)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(OkcServiceServer).TransferUsdc(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/pb.OkcService/TransferUsdc",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(OkcServiceServer).TransferUsdc(ctx, req.(*TransferUsdcInput))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _OkcService_IsWaitingPermit_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(WalletAddress)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(OkcServiceServer).IsWaitingPermit(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/pb.OkcService/IsWaitingPermit",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(OkcServiceServer).IsWaitingPermit(ctx, req.(*WalletAddress))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _OkcService_GetBalance_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetBalanceInput)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(OkcServiceServer).GetBalance(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/pb.OkcService/GetBalance",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(OkcServiceServer).GetBalance(ctx, req.(*GetBalanceInput))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _OkcService_GetAllowance_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetAllowanceInput)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(OkcServiceServer).GetAllowance(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/pb.OkcService/GetAllowance",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(OkcServiceServer).GetAllowance(ctx, req.(*GetAllowanceInput))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-// OkcService_ServiceDesc is the grpc.ServiceDesc for OkcService service.
-// It's only intended for direct use with grpc.RegisterService,
-// and not to be introspected or modified (even as a copy)
-var OkcService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "pb.OkcService",
-	HandlerType: (*OkcServiceServer)(nil),
-	Methods: []grpc.MethodDesc{
-		{
-			MethodName: "IsBlackListed",
-			Handler:    _OkcService_IsBlackListed_Handler,
-		},
-		{
-			MethodName: "EstimateGasPrice",
-			Handler:    _OkcService_EstimateGasPrice_Handler,
-		},
-		{
-			MethodName: "TransferUsdc",
-			Handler:    _OkcService_TransferUsdc_Handler,
-		},
-		{
-			MethodName: "IsWaitingPermit",
-			Handler:    _OkcService_IsWaitingPermit_Handler,
-		},
-		{
-			MethodName: "GetBalance",
-			Handler:    _OkcService_GetBalance_Handler,
-		},
-		{
-			MethodName: "GetAllowance",
-			Handler:    _OkcService_GetAllowance_Handler,
-		},
-	},
-	Streams:  []grpc.StreamDesc{},
-	Metadata: "proto/services.proto",
-}
-
 // PolygonServiceClient is the client API for PolygonService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type PolygonServiceClient interface {
-	IsBlackListed(ctx context.Context, in *WalletAddress, opts ...grpc.CallOption) (*BlacklistResponse, error)
-	EstimateGasPrice(ctx context.Context, in *EstimateGasPriceInput, opts ...grpc.CallOption) (*EstimateGasPriceOutput, error)
-	TransferUsdc(ctx context.Context, in *TransferUsdcInput, opts ...grpc.CallOption) (*TransferUsdcOutput, error)
 	IsWaitingPermit(ctx context.Context, in *WalletAddress, opts ...grpc.CallOption) (*IsWaitingPermitOutput, error)
 	GetBalance(ctx context.Context, in *GetBalanceInput, opts ...grpc.CallOption) (*GetBalanceOutput, error)
 	GetAllowance(ctx context.Context, in *GetAllowanceInput, opts ...grpc.CallOption) (*GetAllowanceOutput, error)
-	GetUsdtMetaNonce(ctx context.Context, in *GetUsdtMetaNonceInput, opts ...grpc.CallOption) (*GetUsdtMetaNonceOutput, error)
 }
 
 type polygonServiceClient struct {
@@ -727,33 +191,6 @@ type polygonServiceClient struct {
 
 func NewPolygonServiceClient(cc grpc.ClientConnInterface) PolygonServiceClient {
 	return &polygonServiceClient{cc}
-}
-
-func (c *polygonServiceClient) IsBlackListed(ctx context.Context, in *WalletAddress, opts ...grpc.CallOption) (*BlacklistResponse, error) {
-	out := new(BlacklistResponse)
-	err := c.cc.Invoke(ctx, "/pb.PolygonService/IsBlackListed", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *polygonServiceClient) EstimateGasPrice(ctx context.Context, in *EstimateGasPriceInput, opts ...grpc.CallOption) (*EstimateGasPriceOutput, error) {
-	out := new(EstimateGasPriceOutput)
-	err := c.cc.Invoke(ctx, "/pb.PolygonService/EstimateGasPrice", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *polygonServiceClient) TransferUsdc(ctx context.Context, in *TransferUsdcInput, opts ...grpc.CallOption) (*TransferUsdcOutput, error) {
-	out := new(TransferUsdcOutput)
-	err := c.cc.Invoke(ctx, "/pb.PolygonService/TransferUsdc", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
 }
 
 func (c *polygonServiceClient) IsWaitingPermit(ctx context.Context, in *WalletAddress, opts ...grpc.CallOption) (*IsWaitingPermitOutput, error) {
@@ -783,26 +220,13 @@ func (c *polygonServiceClient) GetAllowance(ctx context.Context, in *GetAllowanc
 	return out, nil
 }
 
-func (c *polygonServiceClient) GetUsdtMetaNonce(ctx context.Context, in *GetUsdtMetaNonceInput, opts ...grpc.CallOption) (*GetUsdtMetaNonceOutput, error) {
-	out := new(GetUsdtMetaNonceOutput)
-	err := c.cc.Invoke(ctx, "/pb.PolygonService/GetUsdtMetaNonce", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 // PolygonServiceServer is the server API for PolygonService service.
 // All implementations must embed UnimplementedPolygonServiceServer
 // for forward compatibility
 type PolygonServiceServer interface {
-	IsBlackListed(context.Context, *WalletAddress) (*BlacklistResponse, error)
-	EstimateGasPrice(context.Context, *EstimateGasPriceInput) (*EstimateGasPriceOutput, error)
-	TransferUsdc(context.Context, *TransferUsdcInput) (*TransferUsdcOutput, error)
 	IsWaitingPermit(context.Context, *WalletAddress) (*IsWaitingPermitOutput, error)
 	GetBalance(context.Context, *GetBalanceInput) (*GetBalanceOutput, error)
 	GetAllowance(context.Context, *GetAllowanceInput) (*GetAllowanceOutput, error)
-	GetUsdtMetaNonce(context.Context, *GetUsdtMetaNonceInput) (*GetUsdtMetaNonceOutput, error)
 	mustEmbedUnimplementedPolygonServiceServer()
 }
 
@@ -810,15 +234,6 @@ type PolygonServiceServer interface {
 type UnimplementedPolygonServiceServer struct {
 }
 
-func (UnimplementedPolygonServiceServer) IsBlackListed(context.Context, *WalletAddress) (*BlacklistResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method IsBlackListed not implemented")
-}
-func (UnimplementedPolygonServiceServer) EstimateGasPrice(context.Context, *EstimateGasPriceInput) (*EstimateGasPriceOutput, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method EstimateGasPrice not implemented")
-}
-func (UnimplementedPolygonServiceServer) TransferUsdc(context.Context, *TransferUsdcInput) (*TransferUsdcOutput, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method TransferUsdc not implemented")
-}
 func (UnimplementedPolygonServiceServer) IsWaitingPermit(context.Context, *WalletAddress) (*IsWaitingPermitOutput, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method IsWaitingPermit not implemented")
 }
@@ -827,9 +242,6 @@ func (UnimplementedPolygonServiceServer) GetBalance(context.Context, *GetBalance
 }
 func (UnimplementedPolygonServiceServer) GetAllowance(context.Context, *GetAllowanceInput) (*GetAllowanceOutput, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetAllowance not implemented")
-}
-func (UnimplementedPolygonServiceServer) GetUsdtMetaNonce(context.Context, *GetUsdtMetaNonceInput) (*GetUsdtMetaNonceOutput, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetUsdtMetaNonce not implemented")
 }
 func (UnimplementedPolygonServiceServer) mustEmbedUnimplementedPolygonServiceServer() {}
 
@@ -842,60 +254,6 @@ type UnsafePolygonServiceServer interface {
 
 func RegisterPolygonServiceServer(s grpc.ServiceRegistrar, srv PolygonServiceServer) {
 	s.RegisterService(&PolygonService_ServiceDesc, srv)
-}
-
-func _PolygonService_IsBlackListed_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(WalletAddress)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(PolygonServiceServer).IsBlackListed(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/pb.PolygonService/IsBlackListed",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PolygonServiceServer).IsBlackListed(ctx, req.(*WalletAddress))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _PolygonService_EstimateGasPrice_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(EstimateGasPriceInput)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(PolygonServiceServer).EstimateGasPrice(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/pb.PolygonService/EstimateGasPrice",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PolygonServiceServer).EstimateGasPrice(ctx, req.(*EstimateGasPriceInput))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _PolygonService_TransferUsdc_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(TransferUsdcInput)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(PolygonServiceServer).TransferUsdc(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/pb.PolygonService/TransferUsdc",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PolygonServiceServer).TransferUsdc(ctx, req.(*TransferUsdcInput))
-	}
-	return interceptor(ctx, in, info, handler)
 }
 
 func _PolygonService_IsWaitingPermit_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -952,24 +310,6 @@ func _PolygonService_GetAllowance_Handler(srv interface{}, ctx context.Context, 
 	return interceptor(ctx, in, info, handler)
 }
 
-func _PolygonService_GetUsdtMetaNonce_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetUsdtMetaNonceInput)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(PolygonServiceServer).GetUsdtMetaNonce(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/pb.PolygonService/GetUsdtMetaNonce",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PolygonServiceServer).GetUsdtMetaNonce(ctx, req.(*GetUsdtMetaNonceInput))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 // PolygonService_ServiceDesc is the grpc.ServiceDesc for PolygonService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -977,18 +317,6 @@ var PolygonService_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "pb.PolygonService",
 	HandlerType: (*PolygonServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
-		{
-			MethodName: "IsBlackListed",
-			Handler:    _PolygonService_IsBlackListed_Handler,
-		},
-		{
-			MethodName: "EstimateGasPrice",
-			Handler:    _PolygonService_EstimateGasPrice_Handler,
-		},
-		{
-			MethodName: "TransferUsdc",
-			Handler:    _PolygonService_TransferUsdc_Handler,
-		},
 		{
 			MethodName: "IsWaitingPermit",
 			Handler:    _PolygonService_IsWaitingPermit_Handler,
@@ -1001,124 +329,7 @@ var PolygonService_ServiceDesc = grpc.ServiceDesc{
 			MethodName: "GetAllowance",
 			Handler:    _PolygonService_GetAllowance_Handler,
 		},
-		{
-			MethodName: "GetUsdtMetaNonce",
-			Handler:    _PolygonService_GetUsdtMetaNonce_Handler,
-		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "proto/services.proto",
-}
-
-// QuoteServiceClient is the client API for QuoteService service.
-//
-// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
-type QuoteServiceClient interface {
-	PriceFeedStream(ctx context.Context, in *PriceFeedParameters, opts ...grpc.CallOption) (QuoteService_PriceFeedStreamClient, error)
-}
-
-type quoteServiceClient struct {
-	cc grpc.ClientConnInterface
-}
-
-func NewQuoteServiceClient(cc grpc.ClientConnInterface) QuoteServiceClient {
-	return &quoteServiceClient{cc}
-}
-
-func (c *quoteServiceClient) PriceFeedStream(ctx context.Context, in *PriceFeedParameters, opts ...grpc.CallOption) (QuoteService_PriceFeedStreamClient, error) {
-	stream, err := c.cc.NewStream(ctx, &QuoteService_ServiceDesc.Streams[0], "/pb.QuoteService/PriceFeedStream", opts...)
-	if err != nil {
-		return nil, err
-	}
-	x := &quoteServicePriceFeedStreamClient{stream}
-	if err := x.ClientStream.SendMsg(in); err != nil {
-		return nil, err
-	}
-	if err := x.ClientStream.CloseSend(); err != nil {
-		return nil, err
-	}
-	return x, nil
-}
-
-type QuoteService_PriceFeedStreamClient interface {
-	Recv() (*PriceFeedOutput, error)
-	grpc.ClientStream
-}
-
-type quoteServicePriceFeedStreamClient struct {
-	grpc.ClientStream
-}
-
-func (x *quoteServicePriceFeedStreamClient) Recv() (*PriceFeedOutput, error) {
-	m := new(PriceFeedOutput)
-	if err := x.ClientStream.RecvMsg(m); err != nil {
-		return nil, err
-	}
-	return m, nil
-}
-
-// QuoteServiceServer is the server API for QuoteService service.
-// All implementations must embed UnimplementedQuoteServiceServer
-// for forward compatibility
-type QuoteServiceServer interface {
-	PriceFeedStream(*PriceFeedParameters, QuoteService_PriceFeedStreamServer) error
-	mustEmbedUnimplementedQuoteServiceServer()
-}
-
-// UnimplementedQuoteServiceServer must be embedded to have forward compatible implementations.
-type UnimplementedQuoteServiceServer struct {
-}
-
-func (UnimplementedQuoteServiceServer) PriceFeedStream(*PriceFeedParameters, QuoteService_PriceFeedStreamServer) error {
-	return status.Errorf(codes.Unimplemented, "method PriceFeedStream not implemented")
-}
-func (UnimplementedQuoteServiceServer) mustEmbedUnimplementedQuoteServiceServer() {}
-
-// UnsafeQuoteServiceServer may be embedded to opt out of forward compatibility for this service.
-// Use of this interface is not recommended, as added methods to QuoteServiceServer will
-// result in compilation errors.
-type UnsafeQuoteServiceServer interface {
-	mustEmbedUnimplementedQuoteServiceServer()
-}
-
-func RegisterQuoteServiceServer(s grpc.ServiceRegistrar, srv QuoteServiceServer) {
-	s.RegisterService(&QuoteService_ServiceDesc, srv)
-}
-
-func _QuoteService_PriceFeedStream_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(PriceFeedParameters)
-	if err := stream.RecvMsg(m); err != nil {
-		return err
-	}
-	return srv.(QuoteServiceServer).PriceFeedStream(m, &quoteServicePriceFeedStreamServer{stream})
-}
-
-type QuoteService_PriceFeedStreamServer interface {
-	Send(*PriceFeedOutput) error
-	grpc.ServerStream
-}
-
-type quoteServicePriceFeedStreamServer struct {
-	grpc.ServerStream
-}
-
-func (x *quoteServicePriceFeedStreamServer) Send(m *PriceFeedOutput) error {
-	return x.ServerStream.SendMsg(m)
-}
-
-// QuoteService_ServiceDesc is the grpc.ServiceDesc for QuoteService service.
-// It's only intended for direct use with grpc.RegisterService,
-// and not to be introspected or modified (even as a copy)
-var QuoteService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "pb.QuoteService",
-	HandlerType: (*QuoteServiceServer)(nil),
-	Methods:     []grpc.MethodDesc{},
-	Streams: []grpc.StreamDesc{
-		{
-			StreamName:    "PriceFeedStream",
-			Handler:       _QuoteService_PriceFeedStream_Handler,
-			ServerStreams: true,
-		},
-	},
 	Metadata: "proto/services.proto",
 }

@@ -1,0 +1,43 @@
+syntax = "proto3";
+package pb;
+option go_package = "internal/grpcServer/pb";
+
+message WalletAddress {
+  string wallet = 1;
+}
+
+message IsWaitingPermitOutput {
+  bool waiting = 1;
+}
+
+message GetBalanceInput {
+  string tokenAddress = 1;
+  string walletAddress = 2;
+}
+
+message GetBalanceOutput {
+  string balance = 1;
+}
+
+message GetAllowanceInput {
+  string ownerAddress = 1;
+  string spenderAddress = 2;
+  string tokenAddress = 3;
+}
+
+message GetAllowanceOutput {
+  string allowance = 1;
+}
+
+service EthereumService {
+  rpc IsWaitingPermit(WalletAddress) returns (IsWaitingPermitOutput) {}
+  rpc GetBalance(GetBalanceInput) returns (GetBalanceOutput) {}
+  rpc GetAllowance(GetAllowanceInput) returns (GetAllowanceOutput) {}
+}
+
+
+service PolygonService {
+  rpc IsWaitingPermit(WalletAddress) returns (IsWaitingPermitOutput) {}
+  rpc GetBalance(GetBalanceInput) returns (GetBalanceOutput) {}
+  rpc GetAllowance(GetAllowanceInput) returns (GetAllowanceOutput) {}
+}
