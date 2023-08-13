@@ -53,6 +53,22 @@ services:
       - postgres
       - rabbitmq
 
+  frontend:
+    build:
+      context: './'
+      dockerfile: './Frontend/Dockerfile'
+    container_name: 'frontend'
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 3s
+    ports:
+      - "80:8080"
+    networks:
+      - mynet
+    depends_on:
+      - api
+
   postgres:
     image: postgres
     restart: always
