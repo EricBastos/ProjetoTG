@@ -164,6 +164,20 @@ func validateLoginInput(input *dtos.GetJwtInput) error {
 	return nil
 }
 
+func (h *UserHandler) Logout(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	http.SetCookie(w, &http.Cookie{
+		Name:     "jwt",
+		Value:    "",
+		MaxAge:   -1,
+		Secure:   true,
+		HttpOnly: true,
+		SameSite: http.SameSiteNoneMode,
+	})
+	w.WriteHeader(http.StatusOK)
+}
+
 func (h *UserHandler) GetStaticDepositLogs(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	pageNum, pageSizeNum := utils.ExtractPaginationParams(r)

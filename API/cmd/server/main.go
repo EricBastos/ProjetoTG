@@ -123,6 +123,10 @@ func main() {
 						r.Get("/info", userHandler.GetUser)
 					})
 
+					r.Group(func(r chi.Router) {
+						r.Post("/logout", userHandler.Logout)
+					})
+
 					r.Route("/mint", func(r chi.Router) {
 						r.Route("/static-pix", func(r chi.Router) {
 							r.Group(func(r chi.Router) {
