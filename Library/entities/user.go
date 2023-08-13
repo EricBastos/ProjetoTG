@@ -10,6 +10,7 @@ type User struct {
 	ID *entities.ID `json:"id"`
 
 	Email    string `json:"email"`
+	Name     string `json:"name"`
 	Password string `json:"password"`
 
 	TaxId string `json:"taxId"`
@@ -17,7 +18,7 @@ type User struct {
 	CreatedAt time.Time `json:"createdAt" gorm:"<-:create"`
 }
 
-func NewUser(email, password, taxId string) (*User, error) {
+func NewUser(name, email, password, taxId string) (*User, error) {
 	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
 		return nil, err
@@ -25,6 +26,7 @@ func NewUser(email, password, taxId string) (*User, error) {
 	id := entities.NewID()
 	return &User{
 		ID:       &id,
+		Name:     name,
 		Email:    email,
 		TaxId:    taxId,
 		Password: string(hash),

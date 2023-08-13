@@ -1,7 +1,9 @@
 package operator
 
 import (
+	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/EricBastos/ProjetoTG/Library/database"
 	"github.com/EricBastos/ProjetoTG/Library/entities"
@@ -13,6 +15,7 @@ import (
 	"github.com/cenkalti/backoff/v4"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"log"
+	"net/http"
 	"os"
 	"os/signal"
 	"strings"
@@ -24,6 +27,8 @@ type Operator struct {
 	rabbit              *rabbitmqClient.RabbitMQClient
 	smartContractOpRepo database.SmartcontractOperationInterface
 	feedbackRepo        database.FeedbackInterface
+	transferDb          database.TransferInterface
+	burnOpDb            database.BurnOpInterface
 	transactionNotify   chan *contractInterface.OnGoingTransactionData
 	interrupt           chan os.Signal
 	client              *ethclient.Client
@@ -84,9 +89,11 @@ type GenericMessage struct {
 	Data                interface{} `json:"data"`
 }
 
-func NewOperator(smartcontractOpDb database.SmartcontractOperationInterface, feedbackRepo database.FeedbackInterface, rabbit *rabbitmqClient.RabbitMQClient, notifyOff chan bool) *Operator {
+func NewOperator(smartcontractOpDb database.SmartcontractOperationInterface, feedbackRepo database.FeedbackInterface, burnOpDb database.BurnOpInterface, transferDb database.TransferInterface, rabbit *rabbitmqClient.RabbitMQClient, notifyOff chan bool) *Operator {
 	op := &Operator{}
 	op.feedbackRepo = feedbackRepo
+	op.burnOpDb = burnOpDb
+	op.transferDb = transferDb
 	op.notifyOffline = notifyOff
 	op.setOnlineStatus(true)
 	op.smartContractOpRepo = smartcontractOpDb
@@ -393,7 +400,15 @@ func (o *Operator) publishResult(resp FeedbackResponse, op string) {
 		log.Println("(Blockchain Feedback) Couldn't persist blockchain feedback. Data: " + feedbackData + ", err: " + err.Error())
 	}
 
-	// If it's a successful burn, we follow up by creating the bank transfer
+	// If it's a successful burn, we follow up by creating a mocked bank transfer
+	if op == "BURN" && resp.Success {
+		go func() {
+			err := o.mockBankTransfer(resp)
+			if err != nil {
+				log.Println("(SANDBOX) Error mocking bank transfer: " + err.Error())
+			}
+		}()
+	}
 }
 
 func (o *Operator) nackMsg(origin string, tag uint64, op, id string, exec bool, tx, reason string, isRetry bool) {
@@ -413,4 +428,58 @@ func (o *Operator) writeOpInDB(operation *entities.SmartcontractOperation) {
 		log.Println("Error writing op to DB:", err.Error())
 	}
 	//log.Println("Sent to DB")
+}
+
+func (o *Operator) mockBankTransfer(feedback FeedbackResponse) error {
+
+	burnOp, err := o.burnOpDb.Get(feedback.OperationId)
+	if err != nil {
+		return err
+	}
+
+	transf := entities.NewTransfer(
+		burnOp.WalletAddress,
+		burnOp.Amount,
+		burnOp.UserName,
+		burnOp.UserTaxId,
+		burnOp.AccBankCode,
+		burnOp.AccBranchCode,
+		burnOp.AccNumber,
+		burnOp.ResponsibleUser,
+		burnOp.Chain,
+		burnOp.Id.String(),
+	)
+	err = o.transferDb.Create(transf)
+	if err != nil {
+		return err
+	}
+
+	time.Sleep(10 * time.Second)
+
+	body, _ := json.Marshal(map[string]interface{}{
+		"subscription": "transfer",
+		"data": map[string]interface{}{
+			"transferId": transf.Id,
+		},
+	})
+
+	webhookUrl := "http://" + configs.Cfg.BankWebhookHost + ":" + configs.Cfg.BankWebhookPort
+	req, err := http.NewRequest("POST", webhookUrl, bytes.NewReader(body))
+	req.Close = true
+	if err != nil {
+		return err
+	}
+	req.Header.Set("Content-Type", "application/json")
+	if err != nil {
+		return err
+	}
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return err
+	}
+	_ = resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return errors.New(http.StatusText(http.StatusInternalServerError))
+	}
+	return nil
 }

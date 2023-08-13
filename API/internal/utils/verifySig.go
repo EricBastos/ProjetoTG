@@ -21,7 +21,7 @@ var ValidChains = map[string]func(walletAddress *string) error{
 	"Polygon":  validatePolygon,
 }
 
-func VerifyBurnPermit(from, chain string, amountInt int, signature, messageTime string, permit *entities.PermitData, identifier string, documentData string) bool {
+func VerifyBurnPermit(from, chain string, amountInt int, permit *entities.PermitData) bool {
 
 	var result bool
 

@@ -72,6 +72,9 @@ func validateUserCreationInput(input *dtos.CreateUserInput) error {
 	if input.Email == "" {
 		return errors.New(utils.MissingEmail)
 	}
+	if input.Name == "" {
+		return errors.New(utils.MissingName)
+	}
 	if !cpfcnpj.ValidateCPF(input.TaxId) {
 		return errors.New(utils.InvalidTaxId)
 	}

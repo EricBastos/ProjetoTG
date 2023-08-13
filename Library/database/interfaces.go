@@ -41,8 +41,6 @@ type StaticDepositInterface interface {
 type BurnOpInterface interface {
 	Create(op *entities.BurnOp) error
 	CreateEmit(op *entities.BurnOp, f func() error) error
-	GetLogs(docData, responsibleUser string, page, pageSize int) ([]entities.BurnOpAPI, error)
-	GetBusinessLogs(responsibleUser string, page, pageSize int) ([]entities.BurnOpAPI, error)
 	Get(id string) (*entities.BurnOp, error)
 }
 
@@ -54,9 +52,4 @@ type TransferInterface interface {
 type TransferFeedbackInterface interface {
 	Create(feedback *entities.TransferFeedback) error
 	FindById(id string) (*entities.TransferFeedback, error)
-}
-
-type BurnFeedbackInterface interface {
-	Create(feedback *entities.BurnFeedback) error
-	FindById(id string) (*entities.BurnFeedback, error)
 }

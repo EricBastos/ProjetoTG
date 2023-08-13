@@ -60,6 +60,7 @@ const (
 
 const (
 	MissingEmail          = "missing email field"
+	MissingName           = "missing name field"
 	MissingPassword       = "missing password field"
 	MissingTaxId          = "missing taxId field"
 	InvalidTaxId          = "invalid taxId field"

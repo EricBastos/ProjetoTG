@@ -34,6 +34,7 @@ func (u *UserLoginUsecase) GetToken(input *dtos.GetJwtInput) (*dtos.GetJwtOutput
 		"sub":   user.ID.String(),
 		"taxId": user.TaxId,
 		"email": user.Email,
+		"name":  user.Name,
 		"iat":   time.Now().Unix(),
 		"exp":   time.Now().Add(time.Second * time.Duration(configs.Cfg.JwtExpiration)).Unix(),
 	})

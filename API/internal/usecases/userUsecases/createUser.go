@@ -25,6 +25,7 @@ func (u *CreateUserUsecase) CreateUser(input *dtos.CreateUserInput) (error, int)
 	var user *entities.User
 
 	user, err = entities.NewUser(
+		input.Name,
 		input.Email,
 		input.Password,
 		input.TaxId)

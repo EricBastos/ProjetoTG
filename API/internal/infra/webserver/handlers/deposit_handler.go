@@ -16,7 +16,6 @@ import (
 
 type DepositHandler struct {
 	staticDepositDb database.StaticDepositInterface
-	httpClient      *http.Client
 }
 
 func NewDepositHandler(
@@ -24,7 +23,6 @@ func NewDepositHandler(
 ) *DepositHandler {
 	return &DepositHandler{
 		staticDepositDb: staticDepositDb,
-		httpClient:      &http.Client{},
 	}
 }
 
@@ -32,6 +30,7 @@ func (h *DepositHandler) CreatePixDeposit(w http.ResponseWriter, r *http.Request
 	w.Header().Set("Content-Type", "application/json")
 	userInfo := &utils.UserInformation{
 		UserId: r.Context().Value("subject").(string),
+		Name:   r.Context().Value("name").(string),
 		TaxId:  r.Context().Value("taxId").(string),
 		Email:  r.Context().Value("email").(string),
 	}
@@ -69,10 +68,10 @@ func (h *DepositHandler) CreatePixDeposit(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	// Activate Webhook after 10 seconds
+	// Activate Webhook after 10 seconds mocking a PIX deposit
 	go func() {
 		time.Sleep(10 * time.Second)
-		err := postStaticPixDepositWebhook(input.Amount, userInfo.TaxId, h.httpClient, depositId)
+		err := postStaticPixDepositWebhook(input.Amount, userInfo.TaxId, depositId)
 		if err != nil {
 			log.Println("(SANDBOX) Error posting pseudo webhook for deposit: " + err.Error())
 		}
@@ -83,8 +82,7 @@ func (h *DepositHandler) CreatePixDeposit(w http.ResponseWriter, r *http.Request
 	w.WriteHeader(http.StatusCreated)
 }
 
-func postStaticPixDepositWebhook(amount int, taxId string, httpClient *http.Client, depositId string) error {
-
+func postStaticPixDepositWebhook(amount int, taxId string, depositId string) error {
 	body, _ := json.Marshal(map[string]interface{}{
 		"subscription": "deposit",
 		"data": map[string]interface{}{
@@ -104,7 +102,7 @@ func postStaticPixDepositWebhook(amount int, taxId string, httpClient *http.Clie
 	if err != nil {
 		return err
 	}
-	resp, err := httpClient.Do(req)
+	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return err
 	}
@@ -117,7 +115,7 @@ func postStaticPixDepositWebhook(amount int, taxId string, httpClient *http.Clie
 
 func firstValidationCreateUserStaticPixDepositInput(input *dtos.CreateUserStaticPixDepositInput) error {
 	if input.Amount <= 0 {
-		return errors.New(utils.InvalidMintAmount)
+		return errors.New(utils.InvalidAmount)
 	}
 	return nil
 }

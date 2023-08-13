@@ -57,31 +57,22 @@ func (h *WebhookHandler) Listen(w http.ResponseWriter, r *http.Request) {
 
 	log.Println("Received", event.Subscription, "subscription")
 	switch event.Subscription {
-	//case "transfer":
-	//	var transfer dtos.TransferFeedbackInput
-	//	err = json.Unmarshal(logData, &transfer)
-	//	if err != nil {
-	//		log.Println("(Webhook) Couldn't unmarshal received transfer data: " + err.Error() + ", data: " + string(logData))
-	//		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
-	//		return
-	//	}
-	//	if _, ok := utils.IgnoreList[utils.TrimCpfCnpj(transfer.Transfer.TaxId)]; !ok {
-	//		usecase := usecases.NewProcessTransferFeedbackUsecase(
-	//			h.mintOperationDb,
-	//			h.transferDb,
-	//			h.rabbit,
-	//			h.transferFeedbackDb,
-	//			h.pendingTransferDb,
-	//			h.operationsToRetryDb,
-	//			h.emailNotifier,
-	//			h.discordBot,
-	//		)
-	//		err = usecase.Process(&transfer, event.Event.WorkspaceId)
-	//		if err != nil {
-	//			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-	//			return
-	//		}
-	//	}
+	case "transfer":
+		var transfer dtos.TransferFeedbackInput
+		err = json.Unmarshal(event.Data, &transfer)
+		if err != nil {
+			log.Println("(Webhook) Couldn't unmarshal received transfer data: ", err.Error(), ", data: ", transfer)
+			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+			return
+		}
+		usecase := usecases.NewProcessTransferFeedbackUsecase(
+			h.transferFeedbackDb,
+		)
+		err = usecase.Process(&transfer)
+		if err != nil {
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
+		}
 
 	case "deposit":
 		var deposit dtos.DepositFeedbackInput

@@ -36,6 +36,11 @@ func main() {
 			ProducerExchange: config.RABBITCallExchange,
 		},
 	)
+	if err != nil {
+		log.Println("Waiting rabbitmq:", err.Error())
+		time.Sleep(3 * time.Second)
+		os.Exit(1)
+	}
 
 	dsn := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
 		config.DBHost,

@@ -57,6 +57,14 @@ func (m *Authenticator) Authenticate(auths ...string) func(next http.Handler) ht
 
 func (m *Authenticator) injectTokenInfo(token jwt.Token, ctx context.Context) (context.Context, error) {
 
+	nameMaybe, ok := token.Get("name")
+	if !ok {
+		return nil, errors.New("name param not found")
+	}
+	name, ok := nameMaybe.(string)
+	if !ok {
+		return nil, errors.New("name param not found")
+	}
 	taxIdMaybe, ok := token.Get("taxId")
 	if !ok {
 		return nil, errors.New("taxId param not found")
@@ -76,6 +84,7 @@ func (m *Authenticator) injectTokenInfo(token jwt.Token, ctx context.Context) (c
 	ctx = context.WithValue(ctx, "subject", token.Subject())
 	ctx = context.WithValue(ctx, "taxId", taxId)
 	ctx = context.WithValue(ctx, "email", email)
+	ctx = context.WithValue(ctx, "name", name)
 
 	return ctx, nil
 }

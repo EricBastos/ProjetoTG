@@ -66,6 +66,8 @@ func main() {
 	err = db.AutoMigrate(
 		&entities.SmartcontractOperation{},
 		&entities.Feedback{},
+		&entities.BurnOp{},
+		&entities.Transfer{},
 	)
 	if err != nil {
 		log.Fatal(err.Error())
@@ -75,8 +77,10 @@ func main() {
 
 	smartcontractOpDb := database.NewSmartcontractOperationDB(db)
 	feedbackDb := database.NewFeedbackDB(db)
+	burnOpDb := database.NewBurnOperationsDB(db)
+	transferDb := database.NewTransferDB(db)
 
-	op := operator.NewOperator(smartcontractOpDb, feedbackDb, rabbit, notifyOffline)
+	op := operator.NewOperator(smartcontractOpDb, feedbackDb, burnOpDb, transferDb, rabbit, notifyOffline)
 
 	go op.Start()
 

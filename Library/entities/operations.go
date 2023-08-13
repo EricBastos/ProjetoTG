@@ -9,11 +9,8 @@ import (
 type OperationOriginType string
 
 const (
-	MINT     OperationOriginType = "MINT"
-	BURN     OperationOriginType = "BURN"
-	SWAP     OperationOriginType = "SWAP"
-	PIXTOUSD OperationOriginType = "PIX-TO-USD"
-	TRANSFER OperationOriginType = "TRANSFER-WITH-PERMIT"
+	MINT OperationOriginType = "MINT"
+	BURN OperationOriginType = "BURN"
 )
 
 type SmartContractOp interface {
@@ -22,20 +19,6 @@ type SmartContractOp interface {
 	GetResponsibleUser() *entities.ID
 	GetID() *entities.ID
 	GetChain() string
-}
-
-type OperationToRetry struct {
-	Id *entities.ID `json:"id"`
-	// must retry
-	// retrying
-	// success
-	// failed
-	Status              string       `json:"status"`
-	Operation           string       `json:"operation"`
-	OperationOriginType string       `json:"operationOriginType"`
-	OperationId         *entities.ID `json:"operationId"`
-	//AccountId   *entities.ID `json:"accountId"`
-	DataJson string `json:"data"`
 }
 
 type SmartcontractOperation struct {
@@ -52,30 +35,6 @@ type SmartcontractOperation struct {
 	Feedback *Feedback `json:"feedback"`
 }
 
-type UsdcTransferWithAuthData struct {
-	FromWallet  string `json:"from"`
-	ToWallet    string `json:"to"`
-	Value       int    `json:"value"` // Must include decimals already
-	ValidAfter  int    `json:"validAfter"`
-	ValidBefore int    `json:"validBefore"`
-	Nonce       string `json:"nonce"`
-	R           string `json:"r"` //[32]byte
-	S           string `json:"s"` //[32]byte
-	V           uint8  `json:"v"`
-}
-
-type UsdtTransferWithAuthData struct {
-	FromWallet        string `json:"from"`
-	ToWallet          string `json:"to"`
-	Value             int    `json:"value"` // Must include decimals already
-	Deadline          int64  `json:"deadline"`
-	FunctionSignature string `json:"functionSignature"`
-	Nonce             int64  `json:"nonce"`
-	R                 string `json:"r"` //[32]byte
-	S                 string `json:"s"` //[32]byte
-	V                 uint8  `json:"v"`
-}
-
 type PermitData struct {
 	Deadline int64  `json:"deadline"`
 	Nonce    int64  `json:"nonce"`
@@ -89,7 +48,6 @@ type BurnOp struct {
 	ResponsibleUser *entities.ID `json:"userId"`
 	Chain           string       `json:"chain"`
 	WalletAddress   string       `json:"address"`
-	//WorkspaceId     string       `json:"-"`
 
 	Amount        int    `json:"amount"`
 	UserName      string `json:"userName"`
@@ -98,19 +56,13 @@ type BurnOp struct {
 	AccBranchCode string `json:"accBranchCode"`
 	AccNumber     string `json:"accNumber"`
 
-	Permit       *PermitData `json:"permit" gorm:"embedded"`
-	IsWaasWallet bool        `json:"isWaasWallet"`
+	Permit *PermitData `json:"permit" gorm:"embedded"`
 
 	SmartContractOps []SmartcontractOperation `json:"smartContractOps" gorm:"polymorphic:Operation"`
 
 	Transfers []Transfer `json:"transfers" gorm:"foreignKey:AssociatedBurnId"` // MUST FETCH THE MOST RECENT ONE
 
-	CreatedAt   time.Time `json:"createdAt"`
-	NotifyEmail bool      `json:"notifyEmail"`
-
-	ElbowWallet string `json:"elbowWallet"`
-	Fee         int    `json:"fee"`
-	MarkupFee   int    `json:"markupFee"`
+	CreatedAt time.Time `json:"createdAt"`
 }
 
 type MintOp struct {
@@ -127,57 +79,6 @@ type MintOp struct {
 	SmartContractOps []SmartcontractOperation `json:"smartContractOps" gorm:"polymorphic:Operation"`
 }
 
-type SwapOp struct {
-	Id              *entities.ID `json:"id"`
-	ResponsibleUser *entities.ID `json:"userId"`
-	Chain           string       `json:"chain"`
-	WalletAddress   string       `json:"address"`
-	ReceiverAddress string       `json:"receiverAddress"`
-
-	BrlaAmount    int    `json:"brlaAmount"`
-	UsdAmount     int    `json:"usdAmount"`
-	UsdToBrla     bool   `json:"usdToBrla"`
-	Coin          string `json:"coin"`
-	IsWholesale   bool   `json:"isWholesale"`
-	WholesaleCode string `json:"wholesaleCode"`
-	UserDocument  string `json:"userDocument"`
-	BasePrice     string `json:"basePrice"`
-	BaseFee       string `json:"baseFee"`
-	MarkupFee     string `json:"markupFee"`
-
-	SmartContractOps []SmartcontractOperation `json:"smartContractOps" gorm:"polymorphic:Operation"`
-
-	// After calling hugoX
-	OrderId string `json:"orderId"`
-
-	Permit       *PermitData `json:"permit" gorm:"embedded"`
-	IsWaasWallet bool        `json:"isWaasWallet"`
-
-	CreatedAt time.Time `json:"createdAt"`
-
-	//WorkspaceId string `json:"-"`
-	NotifyEmail bool `json:"notifyEmail"`
-}
-
-type PixToUsdOp struct {
-	Id              *entities.ID `json:"id"`
-	ResponsibleUser *entities.ID `json:"userId"`
-	Chain           string       `json:"chain"`
-	WalletAddress   string       `json:"address"`
-	ReceiverAddress string       `json:"receiverAddress"`
-
-	BrlaAmount                  int                      `json:"brlaAmount"`
-	UsdAmount                   int                      `json:"usdAmount"`
-	Coin                        string                   `json:"coin"`
-	CreatedAt                   time.Time                `json:"createdAt"`
-	AssociatedBankTransactionId string                   `json:"associatedBankTransactionId"`
-	SmartContractOps            []SmartcontractOperation `json:"smartContractOps" gorm:"polymorphic:Operation"`
-	//WorkspaceId                 string                   `json:"-"`
-	NotifyEmail bool `json:"notifyEmail"`
-
-	Permit *PermitData `json:"permit" gorm:"-:all"`
-}
-
 func NewSmartcontractOperation(op, opOrigin, opId string, executed bool, tx, reason string, isRetry bool) *SmartcontractOperation {
 	parsedOpId, _ := entities.ParseID(opId)
 	id := entities.NewID()
@@ -187,16 +88,6 @@ func NewSmartcontractOperation(op, opOrigin, opId string, executed bool, tx, rea
 		opType = "mint_ops"
 	case "BURN":
 		opType = "burn_ops"
-	case "SWAP":
-		opType = "swap_ops"
-	case "PIX-TO-USD":
-		opType = "pix_to_usd_ops"
-	case "PARTIAL-USD-SWAP":
-		opType = "swap_ops"
-	case "CONVERT-USD":
-		opType = "swap_ops"
-	case "TRANSFER-WITH-PERMIT":
-		opType = "blockchain_transfer_ops"
 	}
 	return &SmartcontractOperation{
 		ID:            &id,
@@ -207,34 +98,6 @@ func NewSmartcontractOperation(op, opOrigin, opId string, executed bool, tx, rea
 		Tx:            tx,
 		Reason:        reason,
 		IsRetry:       isRetry,
-	}
-}
-
-func NewRetryOp(op SmartContractOp, opOriginType OperationOriginType) *OperationToRetry {
-	retryId := entities.NewID()
-	return &OperationToRetry{
-		Id:                  &retryId,
-		Status:              "must retry",
-		OperationOriginType: string(opOriginType),
-		Operation:           op.GetOperationType(),
-		OperationId:         op.GetID(),
-		DataJson:            op.GetDataInJson(),
-	}
-}
-
-func NewBurn(walletAddress string, amount int, userName, userTaxId, accBankCode, accBranchCode, accNumber, chain string, responsible *entities.ID) *BurnOp {
-	opId := entities.NewID()
-	return &BurnOp{
-		Id:              &opId,
-		ResponsibleUser: responsible,
-		Chain:           chain,
-		WalletAddress:   walletAddress,
-		Amount:          amount,
-		UserName:        userName,
-		UserTaxId:       userTaxId,
-		AccBankCode:     accBankCode,
-		AccBranchCode:   accBranchCode,
-		AccNumber:       accNumber,
 	}
 }
 
@@ -285,59 +148,6 @@ func (op *BurnOp) GetChain() string {
 	return op.Chain
 }
 
-func NewSwap(walletAddress, receiverAddress string, brlaAmount, usdAmount int, chain string, usdToBrla, isWholesale bool, wholesaleCode, orderId string, responsible *entities.ID, permit *PermitData, userDocument string, basePrice, baseFee, markupFee, coin string) *SwapOp {
-	opId := entities.NewID()
-	return &SwapOp{
-		Id:              &opId,
-		ResponsibleUser: responsible,
-		Chain:           chain,
-		ReceiverAddress: receiverAddress,
-		WalletAddress:   walletAddress,
-		BrlaAmount:      brlaAmount,
-		UsdAmount:       usdAmount,
-		UsdToBrla:       usdToBrla,
-		IsWholesale:     isWholesale,
-		WholesaleCode:   wholesaleCode,
-		Permit:          permit,
-		OrderId:         orderId,
-		UserDocument:    userDocument,
-		BasePrice:       basePrice,
-		BaseFee:         baseFee,
-		MarkupFee:       markupFee,
-		Coin:            coin,
-	}
-}
-
-func NewSwapFromJson(jsonData []byte) (*SwapOp, error) {
-	var swapOp SwapOp
-	err := json.Unmarshal(jsonData, &swapOp)
-	if err != nil {
-		return nil, err
-	}
-	return &swapOp, nil
-}
-
-func (op *SwapOp) GetDataInJson() string {
-	data, _ := json.Marshal(op)
-	return string(data)
-}
-
-func (op *SwapOp) GetOperationType() string {
-	return "SWAP"
-}
-
-func (op *SwapOp) GetResponsibleUser() *entities.ID {
-	return op.ResponsibleUser
-}
-
-func (op *SwapOp) GetID() *entities.ID {
-	return op.Id
-}
-
-func (op *SwapOp) GetChain() string {
-	return op.Chain
-}
-
 func NewMint(walletAddress string, amount int, chain, reason string, responsible *entities.ID, associatedBankTransactionId string) *MintOp {
 	opId := entities.NewID()
 	return &MintOp{
@@ -377,136 +187,6 @@ func (op *MintOp) GetID() *entities.ID {
 }
 
 func (op *MintOp) GetChain() string {
-	return op.Chain
-}
-
-func NewPixToUsdOp(responsible *entities.ID, chain, walletAddress, receiverAddress string, brlaAmount, usdAmount int, coin, associatedBankTransactionId string) *PixToUsdOp {
-	opId := entities.NewID()
-	return &PixToUsdOp{
-		Id:                          &opId,
-		ResponsibleUser:             responsible,
-		Chain:                       chain,
-		WalletAddress:               walletAddress,
-		BrlaAmount:                  brlaAmount,
-		UsdAmount:                   usdAmount,
-		Coin:                        coin,
-		ReceiverAddress:             receiverAddress,
-		AssociatedBankTransactionId: associatedBankTransactionId,
-	}
-}
-func NewNewPixToUsdOpFromJson(jsonData []byte) (*PixToUsdOp, error) {
-	var pixToUsdOp PixToUsdOp
-	err := json.Unmarshal(jsonData, &pixToUsdOp)
-	if err != nil {
-		return nil, err
-	}
-	return &pixToUsdOp, nil
-}
-
-func (op *PixToUsdOp) GetDataInJson() string {
-	data, _ := json.Marshal(op)
-	return string(data)
-}
-
-func (op *PixToUsdOp) GetOperationType() string {
-	return "PIX-TO-USD"
-}
-
-func (op *PixToUsdOp) GetResponsibleUser() *entities.ID {
-	return op.ResponsibleUser
-}
-
-func (op *PixToUsdOp) GetID() *entities.ID {
-	return op.Id
-}
-
-func (op *PixToUsdOp) GetChain() string {
-	return op.Chain
-}
-
-type PartialUsdSwapOp struct {
-	Id              *entities.ID `json:"id"`
-	Chain           string       `json:"chain"`
-	WalletAddress   string       `json:"walletAddress"`
-	UsdAmount       int          `json:"usdAmount"`
-	Coin            string       `json:"coin"`
-	WorkspaceId     string
-	ResponsibleUser *entities.ID
-}
-
-func (op *PartialUsdSwapOp) GetDataInJson() string {
-	data, _ := json.Marshal(op)
-	return string(data)
-}
-
-func (op *PartialUsdSwapOp) GetOperationType() string {
-	return "PARTIAL-USD-SWAP"
-}
-
-func (op *PartialUsdSwapOp) GetResponsibleUser() *entities.ID {
-	return op.ResponsibleUser
-}
-
-func (op *PartialUsdSwapOp) GetID() *entities.ID {
-	return op.Id
-}
-
-func (op *PartialUsdSwapOp) GetChain() string {
-	return op.Chain
-}
-
-func (op *PartialUsdSwapOp) GetWorkspaceId() string {
-	return op.WorkspaceId
-}
-
-type BlockchainTransferOp struct {
-	Id              *entities.ID `json:"id"`
-	ResponsibleUser *entities.ID `json:"userId"`
-	Chain           string       `json:"chain"`
-	FromWallet      string       `json:"from"`
-	ToWallet        string       `json:"to"`
-	Value           int          `json:"value"` // Must include decimals already
-	Coin            string       `json:"coin"`  // Purely informational
-	CreatedAt       time.Time    `json:"createdAt"`
-
-	UsdcPermit *UsdcTransferWithAuthData `json:"usdcPermit" gorm:"-:all"`
-	UsdtPermit *UsdtTransferWithAuthData `json:"usdtPermit" gorm:"-:all"`
-
-	SmartContractOps []SmartcontractOperation `json:"smartContractOps" gorm:"polymorphic:Operation"`
-	//WorkspaceId      string                   `json:"-"`
-	NotifyEmail bool `json:"notifyEmail"`
-}
-
-func NewBlockchainTransferOp(responsible *entities.ID, chain, fromWallet, toWallet string, value int) *BlockchainTransferOp {
-	opId := entities.NewID()
-	return &BlockchainTransferOp{
-		Id:              &opId,
-		ResponsibleUser: responsible,
-		Chain:           chain,
-		FromWallet:      fromWallet,
-		ToWallet:        toWallet,
-		Value:           value,
-	}
-}
-
-func (op *BlockchainTransferOp) GetDataInJson() string {
-	data, _ := json.Marshal(op)
-	return string(data)
-}
-
-func (op *BlockchainTransferOp) GetOperationType() string {
-	return "TRANSFER-WITH-PERMIT"
-}
-
-func (op *BlockchainTransferOp) GetResponsibleUser() *entities.ID {
-	return op.ResponsibleUser
-}
-
-func (op *BlockchainTransferOp) GetID() *entities.ID {
-	return op.Id
-}
-
-func (op *BlockchainTransferOp) GetChain() string {
 	return op.Chain
 }
 
@@ -576,24 +256,6 @@ type StaticDepositAPI struct {
 	MintOps []MintOpAPI `json:"mintOps"`
 }
 
-type PixToUsdDepositAPI struct {
-	Id              *entities.ID `json:"id"`
-	Chain           string       `json:"chain"`
-	WalletAddress   string       `json:"walletAddress"`
-	ReceiverAddress string       `json:"receiverAddress"`
-	Coin            string       `json:"coin"`
-	AmountBrl       int          `json:"amountBrl"`
-	AmountUsd       int          `json:"amountUsd"`
-	TaxId           string       `json:"taxId"`
-	Due             *time.Time   `json:"due"`
-	CreatedAt       *time.Time   `json:"createdAt"`
-	Status          string       `json:"status"`
-	Permit          *PermitData  `json:"permit"`
-	UpdatedAt       time.Time    `json:"updatedAt"`
-
-	PixToUsdOps []PixToUsdOpAPI `json:"pixToUsdOps"`
-}
-
 type MintOpAPI struct {
 	Id               *entities.ID                `json:"id"`
 	Amount           int                         `json:"amount"`
@@ -601,34 +263,4 @@ type MintOpAPI struct {
 	CreatedAt        time.Time                   `json:"createdAt"`
 	Fee              int                         `json:"fee"`
 	SmartContractOps []SmartcontractOperationAPI `json:"smartContractOps"`
-}
-
-type PixToUsdOpAPI struct {
-	Id               *entities.ID                `json:"id"`
-	BrlaAmount       int                         `json:"brlaAmount"`
-	UsdAmount        int                         `json:"usdAmount"`
-	Coin             string                      `json:"coin"`
-	CreatedAt        time.Time                   `json:"createdAt"`
-	SmartContractOps []SmartcontractOperationAPI `json:"smartContractOps"`
-}
-
-type SwapOpAPI struct {
-	Id              *entities.ID `json:"id"`
-	Chain           string       `json:"chain"`
-	WalletAddress   string       `json:"walletAddress"`
-	ReceiverAddress string       `json:"receiverAddress"`
-
-	BrlaAmount   int    `json:"brlaAmount"`
-	UsdAmount    int    `json:"usdAmount"`
-	UsdToBrla    bool   `json:"usdToBrla"`
-	Coin         string `json:"coin"`
-	UserDocument string `json:"userDocument"`
-	BasePrice    string `json:"basePrice"`
-	BaseFee      string `json:"baseFee"`
-
-	SmartContractOps []SmartcontractOperationAPI `json:"smartContractOps"`
-
-	Permit *PermitData `json:"permit"`
-
-	CreatedAt time.Time `json:"createdAt"`
 }

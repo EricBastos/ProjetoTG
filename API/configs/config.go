@@ -21,6 +21,11 @@ type DBConf struct {
 	DBPassword string `mapstructure:"PASS_DB"`
 }
 
+type GRPCConf struct {
+	GRPCSmartcontractHost string `mapstructure:"GRPC_SMARTCONTRACT_HOST"`
+	GRPCSmartcontractPort string `mapstructure:"GRPC_SMARTCONTRACT_PORT"`
+}
+
 type BankWebhookConf struct {
 	BankWebhookHost string `mapstructure:"BANK_WEBHOOK_HOST"`
 	BankWebhookPort string `mapstructure:"BANK_WEBHOOK_PORT"`
@@ -31,6 +36,8 @@ type RabbitmqConf struct {
 	RABBITPort     string `mapstructure:"RABBITMQ_PORT"`
 	RABBITUser     string `mapstructure:"RABBITMQ_USER"`
 	RABBITPassword string `mapstructure:"RABBITMQ_PASS"`
+
+	RABBITCallExchange string `mapstructure:"RABBITMQ_CALL_EXCHANGE"`
 }
 
 type WalletsConf struct {
@@ -50,6 +57,7 @@ type Conf struct {
 	RabbitmqConf
 	JwtConf
 	BankWebhookConf
+	GRPCConf
 }
 
 func LoadConfig(path string) (*Conf, error) {
@@ -59,6 +67,7 @@ func LoadConfig(path string) (*Conf, error) {
 	var bankWebhookConf BankWebhookConf
 	var walletsConf WalletsConf
 	var contractsConf ContractsConf
+	var grpcConf GRPCConf
 	viper.SetConfigName(".env")
 	viper.SetConfigType("env")
 	viper.AddConfigPath(path)
@@ -83,6 +92,10 @@ func LoadConfig(path string) (*Conf, error) {
 	if err != nil {
 		return nil, err
 	}
+	err = viper.Unmarshal(&grpcConf)
+	if err != nil {
+		return nil, err
+	}
 
 	walletsConf.EthereumWalletAddress = viper.GetString("ETH_PUBLIC_KEY")
 	walletsConf.PolygonWalletAddress = viper.GetString("POLYGON_PUBLIC_KEY")
@@ -96,6 +109,7 @@ func LoadConfig(path string) (*Conf, error) {
 		WalletsConf:     walletsConf,
 		ContractsConf:   contractsConf,
 		BankWebhookConf: bankWebhookConf,
+		GRPCConf:        grpcConf,
 	}
 	cfg.TokenAuthUser = jwtauth.New("HS256", []byte(cfg.JwtSecret), nil)
 	Cfg = cfg

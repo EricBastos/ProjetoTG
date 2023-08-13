@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"github.com/EricBastos/ProjetoTG/API/configs"
+	"github.com/EricBastos/ProjetoTG/API/internal/grpcClient"
+	"github.com/EricBastos/ProjetoTG/API/internal/infra/rabbitmqClient"
 	"github.com/EricBastos/ProjetoTG/API/internal/infra/webserver/handlers"
 	"github.com/EricBastos/ProjetoTG/API/internal/infra/webserver/middlewares"
 	"github.com/EricBastos/ProjetoTG/Library/database"
@@ -21,6 +23,27 @@ import (
 
 func main() {
 	config, err := configs.LoadConfig(".")
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+
+	// Rabbitmq setup
+	rabbitClient, err := rabbitmqClient.NewRabbitMQClient(
+		&rabbitmqClient.RabbitMQClientConfig{
+			User:             config.RABBITUser,
+			Pass:             config.RABBITPassword,
+			Host:             config.RABBITHost,
+			Port:             config.RABBITPort,
+			ProducerExchange: config.RABBITCallExchange,
+		},
+	)
+	if err != nil {
+		log.Println("Waiting rabbitmq:", err.Error())
+		time.Sleep(3 * time.Second)
+		os.Exit(1)
+	}
+
+	err = grpcClient.InitializeServices()
 	if err != nil {
 		log.Fatal(err.Error())
 	}
@@ -46,6 +69,7 @@ func main() {
 	err = db.AutoMigrate(
 		&entities.User{},
 		&entities.StaticDeposit{},
+		&entities.BurnOp{},
 	)
 	if err != nil {
 		log.Fatal(err.Error())
@@ -53,9 +77,11 @@ func main() {
 
 	userDb := database.NewUserDB(db)
 	staticDepositDb := database.NewStaticDepositDB(db)
+	burnOpsDb := database.NewBurnOperationsDB(db)
 
 	userHandler := handlers.NewUserHandler(userDb, staticDepositDb)
 	depositHandler := handlers.NewDepositHandler(staticDepositDb)
+	withdrawHandler := handlers.NewWithdrawHandler(burnOpsDb, rabbitClient)
 
 	userGeneralAuthenticator := middlewares.NewAuthenticator("USER", userDb)
 
@@ -99,15 +125,15 @@ func main() {
 							//})
 						})
 					})
-					//
-					//r.Route("/burn", func(r chi.Router) {
-					//	r.Group(func(r chi.Router) {
-					//		r.Get("/history", userHandler.GetTransfersLogs)
-					//	})
-					//	r.Group(func(r chi.Router) {
-					//		r.Post("/", withdrawHandler.CreateUserWithdraw)
-					//	})
-					//})
+
+					r.Route("/burn", func(r chi.Router) {
+						r.Group(func(r chi.Router) {
+							r.Post("/", withdrawHandler.CreateUserWithdraw)
+						})
+						//r.Group(func(r chi.Router) {
+						//	r.Get("/history", userHandler.GetTransfersLogs)
+						//})
+					})
 
 				})
 

@@ -135,7 +135,7 @@ const (
 	TokenInvalid             = "invalid token"
 	WontSwapZero             = "wont swap zero quantity of either side"
 
-	InvalidMintAmount      = "amount must be a positive integer"
+	InvalidAmount          = "amount must be a positive integer"
 	InvalidMintToUsdAmount = "amount must be an integer greater than 40000 (R$400.00)"
 	InvalidBurnAmount1     = "amount must be an integer greater than 5000 (R$50.00)"
 	InvalidBurnAmount2     = "amount must be an integer greater than 75 (R$0.75)"

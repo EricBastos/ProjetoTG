@@ -7,6 +7,7 @@ import (
 
 type UserInformation struct {
 	UserId string
+	Name   string
 	Email  string
 	TaxId  string
 }
