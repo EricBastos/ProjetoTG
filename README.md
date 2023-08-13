@@ -1,6 +1,6 @@
 # LAUNCHING A STABLECOIN WITH CROSS-CHAININTEROPERABILITY
 
-## This Repository that supports my Final Work of Undergraduation Study
+## This repository supports my Final Work of Undergraduation Study
 
 ### Steps to reproduce the results
 
