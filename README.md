@@ -15,6 +15,9 @@ chmod +x local.sh
 ```
 - Simply execute local.sh, and, if you have docker set up correctly, it'll create and start all the containers
 necessary to test the code.
+```
+./local.sh
+```
 - P.S.: If you're using windows, you can reproduce the exact same steps above if you do everything inside WSL. If you're not
 using WSL, you might have to manually execute the commands inside local.sh in your command line. It should work as long as 
 docker is properly set up.
