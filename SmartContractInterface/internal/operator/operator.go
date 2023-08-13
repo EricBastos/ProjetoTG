@@ -2,6 +2,7 @@ package operator
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/EricBastos/ProjetoTG/Library/database"
 	"github.com/EricBastos/ProjetoTG/Library/entities"
 	entities2 "github.com/EricBastos/ProjetoTG/Library/pkg/entities"
@@ -22,6 +23,7 @@ import (
 type Operator struct {
 	rabbit              *rabbitmqClient.RabbitMQClient
 	smartContractOpRepo database.SmartcontractOperationInterface
+	feedbackRepo        database.FeedbackInterface
 	transactionNotify   chan *contractInterface.OnGoingTransactionData
 	interrupt           chan os.Signal
 	client              *ethclient.Client
@@ -82,8 +84,9 @@ type GenericMessage struct {
 	Data                interface{} `json:"data"`
 }
 
-func NewOperator(smartcontractOpDb database.SmartcontractOperationInterface, rabbit *rabbitmqClient.RabbitMQClient, notifyOff chan bool) *Operator {
+func NewOperator(smartcontractOpDb database.SmartcontractOperationInterface, feedbackRepo database.FeedbackInterface, rabbit *rabbitmqClient.RabbitMQClient, notifyOff chan bool) *Operator {
 	op := &Operator{}
+	op.feedbackRepo = feedbackRepo
 	op.notifyOffline = notifyOff
 	op.setOnlineStatus(true)
 	op.smartContractOpRepo = smartcontractOpDb
@@ -218,8 +221,7 @@ MainForLoop:
 							ErrorMsg:            err.Error(),
 						}
 
-						respJson, _ := json.Marshal(resp)
-						go o.publishResult(respJson, message.Operation)
+						o.publishResult(resp, message.Operation)
 					} else {
 						log.Println("Posted transaction:", tx.Hash)
 						operation := entities.NewSmartcontractOperation(res.OperationName, message.OperationOriginType, message.ID, true, tx.Hash, "", message.IsRetry)
@@ -353,9 +355,7 @@ func (o *Operator) trackTransactions() {
 				ErrorMsg:            info.ErrReason,
 			}
 
-			respJson, _ := json.Marshal(resp)
-
-			go o.publishResult(respJson, info.Operation)
+			o.publishResult(resp, info.Operation)
 		case <-interrupt:
 			return
 		}
@@ -379,12 +379,21 @@ func (o *Operator) GetOnlineStatus() bool {
 	return result
 }
 
-func (o *Operator) publishResult(respJson []byte, op string) {
-	err := o.rabbit.SecurePublish(respJson, strings.ToLower(op), nil, configs.Cfg.RABBITFeedbackExchange, 0)
+func (o *Operator) publishResult(resp FeedbackResponse, op string) {
+	feedback := entities.NewFeedback(
+		resp.OperationId,
+		op,
+		resp.ID,
+		resp.Success,
+		resp.ErrorMsg,
+	)
+	err := o.feedbackRepo.Create(feedback)
 	if err != nil {
-		log.Println("Secure publish error:", err)
+		feedbackData := fmt.Sprintf("%+v", feedback)
+		log.Println("(Blockchain Feedback) Couldn't persist blockchain feedback. Data: " + feedbackData + ", err: " + err.Error())
 	}
-	//log.Println("Secure publish success", string(respJson), strings.ToLower(op), o.rabbit.config.producerExchange)
+
+	// If it's a successful burn, we follow up by creating the bank transfer
 }
 
 func (o *Operator) nackMsg(origin string, tag uint64, op, id string, exec bool, tx, reason string, isRetry bool) {

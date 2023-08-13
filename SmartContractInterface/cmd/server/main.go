@@ -34,7 +34,6 @@ func main() {
 		config.RABBITHost,
 		config.RABBITPort,
 		config.RABBITCallExchange,
-		config.RABBITFeedbackExchange,
 		map[string]string{
 			"Ethereum": config.RABBITCallQueueEthereum,
 			"Polygon":  config.RABBITCallQueuePolygon,
@@ -66,6 +65,7 @@ func main() {
 
 	err = db.AutoMigrate(
 		&entities.SmartcontractOperation{},
+		&entities.Feedback{},
 	)
 	if err != nil {
 		log.Fatal(err.Error())
@@ -74,8 +74,9 @@ func main() {
 	notifyOffline := make(chan bool)
 
 	smartcontractOpDb := database.NewSmartcontractOperationDB(db)
+	feedbackDb := database.NewFeedbackDB(db)
 
-	op := operator.NewOperator(smartcontractOpDb, rabbit, notifyOffline)
+	op := operator.NewOperator(smartcontractOpDb, feedbackDb, rabbit, notifyOffline)
 
 	go op.Start()
 

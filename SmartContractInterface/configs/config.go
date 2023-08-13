@@ -32,8 +32,7 @@ type RabbitmqConf struct {
 	RABBITUser     string `mapstructure:"RABBITMQ_USER"`
 	RABBITPassword string `mapstructure:"RABBITMQ_PASS"`
 
-	RABBITCallExchange     string `mapstructure:"RABBITMQ_CALL_EXCHANGE"`
-	RABBITFeedbackExchange string `mapstructure:"RABBITMQ_FEEDBACK_EXCHANGE"`
+	RABBITCallExchange string `mapstructure:"RABBITMQ_CALL_EXCHANGE"`
 
 	RABBITCallQueueEthereum string `mapstructure:"RABBITMQ_CALL_QUEUE_ETHEREUM"`
 	RABBITCallQueuePolygon  string `mapstructure:"RABBITMQ_CALL_QUEUE_POLYGON"`

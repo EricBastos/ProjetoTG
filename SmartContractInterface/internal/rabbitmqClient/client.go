@@ -1,11 +1,7 @@
 package rabbitmqClient
 
 import (
-	"context"
-	"encoding/json"
-	"errors"
 	"fmt"
-	"github.com/EricBastos/ProjetoTG/Library/entities"
 	amqp "github.com/rabbitmq/amqp091-go"
 	"log"
 	"sync"
@@ -25,11 +21,10 @@ type RabbitMQClient struct {
 		port             string
 		consumerQueues   map[string]string
 		consumerExchange string
-		producerExchange string
 	}
 }
 
-func NewRabbitMQClient(user, pass, host, port, consumerExchange, producerExchange string, consumerQueues map[string]string) (*RabbitMQClient, error) {
+func NewRabbitMQClient(user, pass, host, port, consumerExchange string, consumerQueues map[string]string) (*RabbitMQClient, error) {
 	l := &RabbitMQClient{config: &struct {
 		user             string
 		pass             string
@@ -37,7 +32,6 @@ func NewRabbitMQClient(user, pass, host, port, consumerExchange, producerExchang
 		port             string
 		consumerQueues   map[string]string
 		consumerExchange string
-		producerExchange string
 	}{
 		user:             user,
 		pass:             pass,
@@ -45,7 +39,6 @@ func NewRabbitMQClient(user, pass, host, port, consumerExchange, producerExchang
 		port:             port,
 		consumerQueues:   consumerQueues,
 		consumerExchange: consumerExchange,
-		producerExchange: producerExchange,
 	},
 		Messages: map[string]<-chan amqp.Delivery{}}
 	err := l.initialize()
@@ -82,11 +75,6 @@ func (l *RabbitMQClient) initialize() error {
 	l.confirms = l.Ch.NotifyPublish(make(chan amqp.Confirmation, 10000)) // Number of expected concurrent requests
 
 	err = l.setupConsumer()
-	if err != nil {
-		return err
-	}
-
-	err = l.setupProducer()
 	if err != nil {
 		return err
 	}
@@ -173,104 +161,6 @@ func (l *RabbitMQClient) setupConsumer() error {
 		l.SetMsgChan(c, msgQ)
 	}
 	//log.Println("Msg chan:", l.Messages)
-	return nil
-}
-
-func (l *RabbitMQClient) setupProducer() error {
-	err := l.Ch.ExchangeDeclare(
-		l.config.producerExchange,
-		"topic",
-		true,
-		false,
-		false,
-		false,
-		nil,
-	)
-
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (l *RabbitMQClient) SecurePublish(data []byte, routingKey string, headers map[string]interface{}, exchange string, priority uint8) error {
-	conf, err := l.Ch.PublishWithDeferredConfirmWithContext(
-		context.Background(),
-		exchange,   // exchange
-		routingKey, // routing key
-		false,      // mandatory
-		false,      // immediate
-		amqp.Publishing{
-			ContentType:  "application/json",
-			Body:         data,
-			Headers:      headers,
-			DeliveryMode: amqp.Persistent,
-			Priority:     priority,
-		})
-	if err != nil {
-		return err
-	}
-
-	confirmation := conf.Wait()
-
-	if confirmation {
-		return nil
-	} else {
-		return errors.New("rabbitmq didn't ack publishing")
-	}
-}
-
-func (l *RabbitMQClient) CallSmartcontract(op entities.SmartContractOp, opOriginType entities.OperationOriginType, priority uint8) error {
-
-	type OpToSendStruct struct {
-		ID                  string      `json:"id"`
-		IsRetry             bool        `json:"isRetry"`
-		UserId              string      `json:"userId"`
-		WorkspaceId         string      `json:"workspaceId"`
-		OperationOriginType string      `json:"operationOriginType"`
-		Operation           string      `json:"operation"`
-		Data                interface{} `json:"data"`
-	}
-
-	var opData interface{}
-
-	err := json.Unmarshal([]byte(op.GetDataInJson()), &opData)
-	if err != nil {
-		return err
-	}
-
-	userIdString := ""
-	if respUser := op.GetResponsibleUser(); respUser != nil {
-		userIdString = respUser.String()
-	}
-
-	opToSend := OpToSendStruct{
-		ID:                  op.GetID().String(),
-		IsRetry:             false,
-		Operation:           op.GetOperationType(),
-		Data:                opData,
-		UserId:              userIdString,
-		OperationOriginType: string(opOriginType),
-	}
-
-	data, err := json.Marshal(opToSend)
-	if err != nil {
-		return err
-	}
-
-	return l.SecurePublish(data, op.GetChain(), nil, l.config.consumerExchange, priority)
-}
-
-func (l *RabbitMQClient) Finish() error {
-	err := l.Ch.Close()
-	if err != nil {
-		return err
-	}
-	err = l.conn.Close()
-	if err != nil {
-		return err
-	}
 	return nil
 }
 
