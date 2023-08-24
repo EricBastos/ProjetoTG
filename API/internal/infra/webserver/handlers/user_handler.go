@@ -74,6 +74,9 @@ func validateUserCreationInput(input *dtos.CreateUserInput) error {
 	if input.Password != input.ConfirmPassword {
 		return errors.New(utils.PasswordsDontMatch)
 	}
+	if input.Password == "" {
+		return errors.New(utils.MissingPassword)
+	}
 	if input.Email == "" {
 		return errors.New(utils.MissingEmail)
 	}
