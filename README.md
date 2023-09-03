@@ -5,7 +5,7 @@
 ### Steps to reproduce the results
 
 - First, make sure you have Docker Engine, Docker CLI and Docker Compose installed. 
-You can find the instructions to do so at https://docs.docker.com/compose/install/
+[You can find the instructions to do so here](https://docs.docker.com/compose/install/).
 - Clone this repository somewhere you want:
 ```
 git clone https://github.com/EricBastos/ProjetoTG.git
@@ -115,3 +115,7 @@ Block Explorer URL: https://polygonscan.com/
 Now, with Metamask installed and both the Sepolia and Mumbai test networks added, you're ready to use the Frontend app.
 Make sure to use one of these networks while interacting with the frontend, otherwise it'll tell you to switch to a valid
 network, since the backend supports only these two networks.
+
+### API Documentation
+
+[You can find the API documentation in OpenAPI 3.0 here](https://app.swaggerhub.com/apis/EricBastos/StableCoin-API/1.0.0).
