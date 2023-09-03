@@ -72,7 +72,7 @@
         try {
             fields.walletAddress = ethAccInfo.account
 
-            const resDeposit = await fetch(backendUrl+'/user/mint/static-pix', {
+            const resDeposit = await fetch(backendUrl+'/user/mint', {
                 method: 'POST',
                 body: JSON.stringify({
                     chain: ethAccInfo.chainId == MumbaiChainId ? "Polygon" : "Ethereum",

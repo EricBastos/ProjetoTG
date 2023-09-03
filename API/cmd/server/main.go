@@ -131,13 +131,11 @@ func main() {
 					})
 
 					r.Route("/mint", func(r chi.Router) {
-						r.Route("/static-pix", func(r chi.Router) {
-							r.Group(func(r chi.Router) {
-								r.Post("/", depositHandler.CreatePixDeposit)
-							})
-							r.Group(func(r chi.Router) {
-								r.Get("/history", userHandler.GetStaticDepositLogs)
-							})
+						r.Group(func(r chi.Router) {
+							r.Post("/", depositHandler.CreatePixDeposit)
+						})
+						r.Group(func(r chi.Router) {
+							r.Get("/history", userHandler.GetStaticDepositLogs)
 						})
 					})
 

@@ -20,7 +20,7 @@
     let historyData = [];
 
     onMount(async () => {
-        const resHistory = await fetch(backendUrl+'/user/mint/static-pix/history?page=1&pageSize=100', {
+        const resHistory = await fetch(backendUrl+'/user/mint/history?page=1&pageSize=100', {
             method: 'GET',
             // headers: {
             //     'Authorization': 'Bearer ' + user.jwtToken
