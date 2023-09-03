@@ -67,6 +67,7 @@ func main() {
 		&entities.SmartcontractOperation{},
 		&entities.Feedback{},
 		&entities.BurnOp{},
+		&entities.BridgeOp{},
 		&entities.Transfer{},
 	)
 	if err != nil {
@@ -78,9 +79,10 @@ func main() {
 	smartcontractOpDb := database.NewSmartcontractOperationDB(db)
 	feedbackDb := database.NewFeedbackDB(db)
 	burnOpDb := database.NewBurnOperationsDB(db)
+	bridgeOpDb := database.NewBridgeOperationsDB(db)
 	transferDb := database.NewTransferDB(db)
 
-	op := operator.NewOperator(smartcontractOpDb, feedbackDb, burnOpDb, transferDb, rabbit, notifyOffline)
+	op := operator.NewOperator(smartcontractOpDb, feedbackDb, burnOpDb, bridgeOpDb, transferDb, rabbit, notifyOffline)
 
 	go op.Start()
 

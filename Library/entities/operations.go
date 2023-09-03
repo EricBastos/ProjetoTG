@@ -9,8 +9,9 @@ import (
 type OperationOriginType string
 
 const (
-	MINT OperationOriginType = "MINT"
-	BURN OperationOriginType = "BURN"
+	MINT   OperationOriginType = "MINT"
+	BURN   OperationOriginType = "BURN"
+	BRIDGE OperationOriginType = "BRIDGE"
 )
 
 type SmartContractOp interface {
@@ -59,7 +60,7 @@ type BurnOp struct {
 
 	SmartContractOps []SmartcontractOperation `json:"smartContractOps" gorm:"polymorphic:Operation"`
 
-	Transfers []Transfer `json:"transfers" gorm:"foreignKey:AssociatedBurnId"` // MUST FETCH THE MOST RECENT ONE
+	Transfers []Transfer `json:"transfers" gorm:"foreignKey:AssociatedBurnId"`
 
 	CreatedAt time.Time `json:"createdAt"`
 }
@@ -73,9 +74,24 @@ type MintOp struct {
 	Reason                        string       `json:"reason"`
 	CreatedAt                     time.Time    `json:"createdAt"`
 	AssociatedBankTransactionID   string       `json:"associatedBankTransactionId"`
-	AssociatedBankTransactionType string
+	AssociatedBankTransactionType string       `json:"associatedBankTransactionType"`
 
 	SmartContractOps []SmartcontractOperation `json:"smartContractOps" gorm:"polymorphic:Operation"`
+}
+
+type BridgeOp struct {
+	Id              *entities.ID `json:"id"`
+	ResponsibleUser *entities.ID `json:"userId"`
+	InputChain      string       `json:"inputChain"`
+	OutputChain     string       `json:"outputChain"`
+	WalletAddress   string       `json:"address"`
+	Amount          int          `json:"amount"`
+
+	Permit *PermitData `json:"permit" gorm:"embedded"`
+
+	SmartContractOps []SmartcontractOperation `json:"smartContractOps" gorm:"polymorphic:Operation"`
+
+	CreatedAt time.Time `json:"createdAt"`
 }
 
 func NewSmartcontractOperation(op, opOrigin, opId string, executed bool, tx, reason string) *SmartcontractOperation {
@@ -87,6 +103,8 @@ func NewSmartcontractOperation(op, opOrigin, opId string, executed bool, tx, rea
 		opType = "mint_ops"
 	case "BURN":
 		opType = "burn_ops"
+	case "BRIDGE":
+		opType = "bridge_ops"
 	}
 	return &SmartcontractOperation{
 		ID:            &id,
@@ -171,14 +189,59 @@ func (op *MintOp) GetChain() string {
 	return op.Chain
 }
 
+func NewBridge(walletAddress string, amount int, inputChain, outputChain string, responsible *entities.ID, permit *PermitData) *BridgeOp {
+	opId := entities.NewID()
+	return &BridgeOp{
+		Id:              &opId,
+		ResponsibleUser: responsible,
+		InputChain:      inputChain,
+		OutputChain:     outputChain,
+		WalletAddress:   walletAddress,
+		Amount:          amount,
+		Permit:          permit,
+	}
+}
+
+func (op *BridgeOp) GetDataInJson() string {
+	data, _ := json.Marshal(op)
+	return string(data)
+}
+
+func (op *BridgeOp) GetOperationType() string {
+	return "BRIDGE"
+}
+
+func (op *BridgeOp) GetResponsibleUser() *entities.ID {
+	return op.ResponsibleUser
+}
+
+func (op *BridgeOp) GetID() *entities.ID {
+	return op.Id
+}
+
+func (op *BridgeOp) GetChain() string {
+	return op.InputChain
+}
+
 type BurnOpAPI struct {
 	Id               *entities.ID                `json:"id"`
 	Chain            string                      `json:"chain"`
 	WalletAddress    string                      `json:"walletAddress"`
 	Amount           int                         `json:"amount"`
-	Permit           *PermitData                 `json:"permit" gorm:"embedded"`
-	SmartContractOps []SmartcontractOperationAPI `json:"smartContractOps" gorm:"polymorphic:Operation"`
-	Transfers        []TransferAPI               `json:"transfers" gorm:"foreignKey:AssociatedBurnId"`
+	Permit           *PermitData                 `json:"permit"`
+	SmartContractOps []SmartcontractOperationAPI `json:"smartContractOps"`
+	Transfers        []TransferAPI               `json:"transfers"`
+	CreatedAt        time.Time                   `json:"createdAt"`
+}
+
+type BridgeOpAPI struct {
+	Id               *entities.ID                `json:"id"`
+	InputChain       string                      `json:"inputChain"`
+	OutputChain      string                      `json:"outputChain"`
+	WalletAddress    string                      `json:"walletAddress"`
+	Amount           int                         `json:"amount"`
+	Permit           *PermitData                 `json:"permit"`
+	SmartContractOps []SmartcontractOperationAPI `json:"smartContractOps"`
 	CreatedAt        time.Time                   `json:"createdAt"`
 }
 
@@ -190,7 +253,7 @@ type SmartcontractOperationAPI struct {
 	Reason        string       `json:"notPostedReason"`
 	CreatedAt     time.Time    `json:"createdAt"`
 
-	Feedback *FeedbackAPI `json:"feedback" gorm:"foreignKey:SmartcontractOperationId"`
+	Feedback *FeedbackAPI `json:"feedback"`
 }
 
 type FeedbackAPI struct {
@@ -210,7 +273,7 @@ type TransferAPI struct {
 	AccountNumber string                `json:"accountNumber"`
 	Id            string                `json:"id"`
 	CreatedAt     time.Time             `json:"createdAt"`
-	Feedbacks     []TransferFeedbackAPI `json:"feedbacks" gorm:"foreignKey:TransferId"`
+	Feedbacks     []TransferFeedbackAPI `json:"feedbacks"`
 }
 
 type TransferFeedbackAPI struct {

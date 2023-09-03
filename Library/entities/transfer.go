@@ -2,7 +2,6 @@ package entities
 
 import (
 	entities2 "github.com/EricBastos/ProjetoTG/Library/pkg/entities"
-	"github.com/EricBastos/ProjetoTG/Library/utils"
 	"time"
 )
 
@@ -38,7 +37,7 @@ func NewTransfer(
 		WalletAddress:    walletAddress,
 		Amount:           amount,
 		Name:             name,
-		TaxId:            utils.TrimCpfCnpj(taxId),
+		TaxId:            taxId,
 		BankCode:         bankCode,
 		BranchCode:       branchCode,
 		AccountNumber:    accountNumber,

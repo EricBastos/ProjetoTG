@@ -8,6 +8,7 @@ import (
 	"github.com/EricBastos/ProjetoTG/Library/database"
 	"github.com/EricBastos/ProjetoTG/Library/entities"
 	entities2 "github.com/EricBastos/ProjetoTG/Library/pkg/entities"
+	"github.com/EricBastos/ProjetoTG/Library/utils"
 	"github.com/EricBastos/ProjetoTG/SmartContractInterface/configs"
 	"github.com/EricBastos/ProjetoTG/SmartContractInterface/internal/contractCaller"
 	"github.com/EricBastos/ProjetoTG/SmartContractInterface/internal/contractInterface"
@@ -29,6 +30,7 @@ type Operator struct {
 	feedbackRepo        database.FeedbackInterface
 	transferDb          database.TransferInterface
 	burnOpDb            database.BurnOpInterface
+	bridgeOpDb          database.BridgeOpInterface
 	transactionNotify   chan *contractInterface.OnGoingTransactionData
 	interrupt           chan os.Signal
 	client              *ethclient.Client
@@ -84,13 +86,13 @@ type GenericMessage struct {
 	Operation           string      `json:"operation"`
 	ResponsibleUser     string      `json:"userId"`
 	OperationOriginType string      `json:"operationOriginType"`
-	WorkspaceId         string      `json:"workspaceId"`
 	Data                interface{} `json:"data"`
 }
 
-func NewOperator(smartcontractOpDb database.SmartcontractOperationInterface, feedbackRepo database.FeedbackInterface, burnOpDb database.BurnOpInterface, transferDb database.TransferInterface, rabbit *rabbitmqClient.RabbitMQClient, notifyOff chan bool) *Operator {
+func NewOperator(smartcontractOpDb database.SmartcontractOperationInterface, feedbackRepo database.FeedbackInterface, burnOpDb database.BurnOpInterface, bridgeOpDb database.BridgeOpInterface, transferDb database.TransferInterface, rabbit *rabbitmqClient.RabbitMQClient, notifyOff chan bool) *Operator {
 	op := &Operator{}
 	op.feedbackRepo = feedbackRepo
+	op.bridgeOpDb = bridgeOpDb
 	op.burnOpDb = burnOpDb
 	op.transferDb = transferDb
 	op.notifyOffline = notifyOff
@@ -399,14 +401,22 @@ func (o *Operator) publishResult(resp FeedbackResponse, op string) {
 		log.Println("(Blockchain Feedback) Couldn't persist blockchain feedback. Data: " + feedbackData + ", err: " + err.Error())
 	}
 
-	// If it's a successful burn, we follow up by creating a mocked bank transfer
-	if op == "BURN" && resp.Success {
+	// If it's a successful burn from a BurnOp, we follow up by creating a mocked bank transfer
+	if op == "BURN" && resp.OperationOriginType == "BURN" && resp.Success {
 		go func() {
 			err := o.mockBankTransfer(resp)
 			if err != nil {
 				log.Println("(SANDBOX) Error mocking bank transfer: " + err.Error())
 			}
 		}()
+	}
+
+	// If it's a successful burn from a BridgeOp, we follow up by creating a MINT
+	if op == "BURN" && resp.OperationOriginType == "BRIDGE" && resp.Success {
+		err := o.bridgeMint(resp)
+		if err != nil {
+			log.Println("(SANDBOX) Error minting in bridge op: " + err.Error())
+		}
 	}
 }
 
@@ -440,7 +450,7 @@ func (o *Operator) mockBankTransfer(feedback FeedbackResponse) error {
 		burnOp.WalletAddress,
 		burnOp.Amount,
 		burnOp.UserName,
-		burnOp.UserTaxId,
+		utils.TrimCpfCnpj(burnOp.UserTaxId),
 		burnOp.AccBankCode,
 		burnOp.AccBranchCode,
 		burnOp.AccNumber,
@@ -480,5 +490,22 @@ func (o *Operator) mockBankTransfer(feedback FeedbackResponse) error {
 	if resp.StatusCode != http.StatusOK {
 		return errors.New(http.StatusText(http.StatusInternalServerError))
 	}
+	return nil
+}
+
+func (o *Operator) bridgeMint(feedback FeedbackResponse) error {
+
+	bridgeOp, err := o.bridgeOpDb.Get(feedback.OperationId)
+	if err != nil {
+		return err
+	}
+
+	op := entities.NewMint(bridgeOp.WalletAddress, bridgeOp.Amount, bridgeOp.OutputChain, "bridging asset", bridgeOp.ResponsibleUser, "")
+	op.Id = bridgeOp.Id
+	err = o.rabbit.CallSmartcontract(op, entities.BRIDGE)
+	if err != nil {
+		return errors.New(utils.OperationCreationError)
+	}
+
 	return nil
 }

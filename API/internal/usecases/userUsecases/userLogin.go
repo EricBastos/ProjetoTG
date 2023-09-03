@@ -4,8 +4,8 @@ import (
 	"errors"
 	"github.com/EricBastos/ProjetoTG/API/configs"
 	"github.com/EricBastos/ProjetoTG/API/internal/dtos"
-	"github.com/EricBastos/ProjetoTG/API/internal/utils"
 	"github.com/EricBastos/ProjetoTG/Library/database"
+	"github.com/EricBastos/ProjetoTG/Library/utils"
 	"net/http"
 	"time"
 )

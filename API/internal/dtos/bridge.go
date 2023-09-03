@@ -4,25 +4,25 @@ import (
 	"github.com/EricBastos/ProjetoTG/Library/entities"
 )
 
-type CreateUserWithdrawInput struct {
-	PixKey        string `json:"pixKey"`
+type BridgeAssetInput struct {
 	WalletAddress string `json:"walletAddress"`
-	Chain         string `json:"chain"`
+	InputChain    string `json:"inputChain"`
+	OutputChain   string `json:"outputChain"`
 	Amount        int    `json:"amount"`
 
 	// Permit Info (EVM-compatible)
 	Permit *entities.PermitData `json:"permit"`
 }
 
-type CreateWithdrawOutput struct {
+type BridgeAssetOutput struct {
 	Id string `json:"id"`
 }
 
-type GetTransfersLogsInput struct {
+type GetBridgeLogsInput struct {
 	Page     int `json:"page"`
 	PageSize int `json:"pageSize"`
 }
 
-type GetTransfersLogsOutput struct {
-	TransfersLogs []entities.BurnOpAPI `json:"transfersLogs"`
+type GetBridgeLogsOutput struct {
+	BridgeLogs []entities.BridgeOpAPI `json:"bridgeLogs"`
 }

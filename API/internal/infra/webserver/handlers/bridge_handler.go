@@ -11,22 +11,22 @@ import (
 	"net/http"
 )
 
-type WithdrawHandler struct {
-	burnOperationsDb database.BurnOpInterface
-	rabbitClient     *rabbitmqClient.RabbitMQClient
+type BridgeHandler struct {
+	bridgeOperationsDb database.BridgeOpInterface
+	rabbitClient       *rabbitmqClient.RabbitMQClient
 }
 
-func NewWithdrawHandler(
-	burnOperationsDb database.BurnOpInterface,
+func NewBridgeHandler(
+	bridgeOperationsDb database.BridgeOpInterface,
 	rabbitClient *rabbitmqClient.RabbitMQClient,
-) *WithdrawHandler {
-	return &WithdrawHandler{
-		burnOperationsDb: burnOperationsDb,
-		rabbitClient:     rabbitClient,
+) *BridgeHandler {
+	return &BridgeHandler{
+		bridgeOperationsDb: bridgeOperationsDb,
+		rabbitClient:       rabbitClient,
 	}
 }
 
-func (h *WithdrawHandler) CreateUserWithdraw(w http.ResponseWriter, r *http.Request) {
+func (h *BridgeHandler) BridgeAsset(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	userInfo := &utils.UserInformation{
 		UserId: r.Context().Value("subject").(string),
@@ -34,7 +34,7 @@ func (h *WithdrawHandler) CreateUserWithdraw(w http.ResponseWriter, r *http.Requ
 		TaxId:  r.Context().Value("taxId").(string),
 		Email:  r.Context().Value("email").(string),
 	}
-	var input dtos.CreateUserWithdrawInput
+	var input dtos.BridgeAssetInput
 	err := json.NewDecoder(r.Body).Decode(&input)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
@@ -45,7 +45,7 @@ func (h *WithdrawHandler) CreateUserWithdraw(w http.ResponseWriter, r *http.Requ
 		})
 		return
 	}
-	if err := firstValidationCreateUserWithdrawInput(&input); err != nil {
+	if err := validateBridgeAssetInput(&input); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		_ = json.NewEncoder(w).Encode(struct {
 			Error string `json:"error"`
@@ -54,15 +54,12 @@ func (h *WithdrawHandler) CreateUserWithdraw(w http.ResponseWriter, r *http.Requ
 		})
 		return
 	}
-	usecase := userUsecases.NewCreateUserWithdrawUsecase(
-		userInfo,
-		h.burnOperationsDb,
-		h.rabbitClient,
-	)
-
-	id, err, code := usecase.Create(&input)
+	usecase := userUsecases.NewCreateBridgeAssetUsecase(userInfo, h.bridgeOperationsDb, h.rabbitClient)
+	var errCode int
+	var depositId string
+	depositId, err, errCode = usecase.Bridge(&input)
 	if err != nil {
-		w.WriteHeader(code)
+		w.WriteHeader(errCode)
 		_ = json.NewEncoder(w).Encode(struct {
 			Error string `json:"error"`
 		}{
@@ -71,28 +68,40 @@ func (h *WithdrawHandler) CreateUserWithdraw(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	res := dtos.CreateWithdrawOutput{Id: id}
+	resp := dtos.BridgeAssetOutput{Id: depositId}
 	w.WriteHeader(http.StatusCreated)
-	_ = json.NewEncoder(w).Encode(res)
+	_ = json.NewEncoder(w).Encode(resp)
 }
 
-func firstValidationCreateUserWithdrawInput(input *dtos.CreateUserWithdrawInput) error {
+func validateBridgeAssetInput(input *dtos.BridgeAssetInput) error {
 	if input.Amount < 0 {
 		return errors.New(utils.InvalidAmount)
-	}
-	if input.PixKey == "" {
-		return errors.New(utils.MissingPixKey)
 	}
 	if input.WalletAddress == "" {
 		return errors.New(utils.MissingWalletAddress)
 	}
-	if input.Chain == "" {
-		return errors.New(utils.MissingChain)
+	if input.InputChain == "" {
+		return errors.New(utils.MissingInputChain)
+	}
+	if input.OutputChain == "" {
+		return errors.New(utils.MissingOutputChain)
 	}
 	if input.Permit == nil {
 		return errors.New(utils.MissingPermit)
 	}
-	validateChainFunc, ok := utils.ValidChains[input.Chain]
+
+	if input.InputChain == input.OutputChain {
+		return errors.New(utils.ChainsAreEqual)
+	}
+
+	validateChainFunc, ok := utils.ValidChains[input.InputChain]
+	if !ok {
+		return errors.New(utils.InvalidChain)
+	}
+	if err := validateChainFunc(&input.WalletAddress); err != nil {
+		return err
+	}
+	validateChainFunc, ok = utils.ValidChains[input.OutputChain]
 	if !ok {
 		return errors.New(utils.InvalidChain)
 	}

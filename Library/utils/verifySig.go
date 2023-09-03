@@ -4,7 +4,6 @@ import (
 	"crypto/ecdsa"
 	"errors"
 	"fmt"
-	"github.com/EricBastos/ProjetoTG/API/configs"
 	"github.com/EricBastos/ProjetoTG/Library/entities"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
@@ -21,7 +20,15 @@ var ValidChains = map[string]func(walletAddress *string) error{
 	"Polygon":  validatePolygon,
 }
 
-func VerifyBurnPermit(from, chain string, amountInt int, permit *entities.PermitData) bool {
+type Contracts struct {
+	EthereumWalletAddress string
+	EthereumTokenAddress  string
+
+	PolygonWalletAddress string
+	PolygonTokenAddress  string
+}
+
+func VerifyBurnPermit(from, chain string, amountInt int, permit *entities.PermitData, contracts *Contracts) bool {
 
 	var result bool
 
@@ -34,8 +41,8 @@ func VerifyBurnPermit(from, chain string, amountInt int, permit *entities.Permit
 			"1",
 			false,
 			common.HexToAddress(from),
-			common.HexToAddress(configs.Cfg.EthereumWalletAddress),
-			common.HexToAddress(configs.Cfg.EthereumTokenContract),
+			common.HexToAddress(contracts.EthereumWalletAddress),
+			common.HexToAddress(contracts.EthereumTokenAddress),
 			11155111,
 			amount,
 			permit)
@@ -47,8 +54,8 @@ func VerifyBurnPermit(from, chain string, amountInt int, permit *entities.Permit
 			"1",
 			false,
 			common.HexToAddress(from),
-			common.HexToAddress(configs.Cfg.PolygonWalletAddress),
-			common.HexToAddress(configs.Cfg.PolygonTokenContract),
+			common.HexToAddress(contracts.PolygonWalletAddress),
+			common.HexToAddress(contracts.PolygonTokenAddress),
 			80001,
 			amount,
 			permit)

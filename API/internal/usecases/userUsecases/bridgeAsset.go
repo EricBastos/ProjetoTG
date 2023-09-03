@@ -10,30 +10,29 @@ import (
 	"github.com/EricBastos/ProjetoTG/Library/entities"
 	entities2 "github.com/EricBastos/ProjetoTG/Library/pkg/entities"
 	"github.com/EricBastos/ProjetoTG/Library/utils"
-	"log"
 	"math/big"
 	"net/http"
 )
 
-type CreateUserWithdrawUsecase struct {
-	userInfo         *utils.UserInformation
-	burnOperationsDB database.BurnOpInterface
-	rabbitClient     *rabbitmqClient.RabbitMQClient
+type CreateBridgeAssetUsecase struct {
+	userInfo           *utils.UserInformation
+	bridgeOperationsDb database.BridgeOpInterface
+	rabbitClient       *rabbitmqClient.RabbitMQClient
 }
 
-func NewCreateUserWithdrawUsecase(
+func NewCreateBridgeAssetUsecase(
 	userInfo *utils.UserInformation,
-	burnOperationsDB database.BurnOpInterface,
+	bridgeOperationsDb database.BridgeOpInterface,
 	rabbitClient *rabbitmqClient.RabbitMQClient,
-) *CreateUserWithdrawUsecase {
-	return &CreateUserWithdrawUsecase{
-		userInfo:         userInfo,
-		burnOperationsDB: burnOperationsDB,
-		rabbitClient:     rabbitClient,
+) *CreateBridgeAssetUsecase {
+	return &CreateBridgeAssetUsecase{
+		userInfo:           userInfo,
+		bridgeOperationsDb: bridgeOperationsDb,
+		rabbitClient:       rabbitClient,
 	}
 }
 
-func (u *CreateUserWithdrawUsecase) Create(input *dtos.CreateUserWithdrawInput) (string, error, int) {
+func (u *CreateBridgeAssetUsecase) Bridge(input *dtos.BridgeAssetInput) (string, error, int) {
 
 	id, creationError, creationCode := u.createAsUser(input)
 
@@ -44,9 +43,9 @@ func (u *CreateUserWithdrawUsecase) Create(input *dtos.CreateUserWithdrawInput) 
 	return id, nil, 0
 }
 
-func (u *CreateUserWithdrawUsecase) createAsUser(input *dtos.CreateUserWithdrawInput) (string, error, int) {
+func (u *CreateBridgeAssetUsecase) createAsUser(input *dtos.BridgeAssetInput) (string, error, int) {
 
-	if !utils.VerifyBurnPermit(input.WalletAddress, input.Chain, input.Amount, input.Permit, &utils.Contracts{
+	if !utils.VerifyBurnPermit(input.WalletAddress, input.InputChain, input.Amount, input.Permit, &utils.Contracts{
 		EthereumWalletAddress: configs.Cfg.EthereumWalletAddress,
 		EthereumTokenAddress:  configs.Cfg.EthereumTokenContract,
 		PolygonWalletAddress:  configs.Cfg.PolygonWalletAddress,
@@ -59,7 +58,7 @@ func (u *CreateUserWithdrawUsecase) createAsUser(input *dtos.CreateUserWithdrawI
 
 	waiting := false
 
-	switch input.Chain {
+	switch input.InputChain {
 	case "Ethereum":
 		balance, balErr := grpcClient.EthereumService.GetBalance(configs.Cfg.EthereumTokenContract, input.WalletAddress)
 		if balErr != nil {
@@ -78,7 +77,6 @@ func (u *CreateUserWithdrawUsecase) createAsUser(input *dtos.CreateUserWithdrawI
 		if balErr != nil {
 			return "", errors.New(utils.InternalError), http.StatusInternalServerError
 		}
-		log.Println(balance)
 		bigInputAmount := new(big.Int).Mul(big.NewInt(int64(input.Amount)), big.NewInt(10000000000000000))
 		if balance.Cmp(bigInputAmount) < 0 {
 			return "", errors.New("wallet balance must be greater than burn amount"), http.StatusBadRequest
@@ -98,26 +96,38 @@ func (u *CreateUserWithdrawUsecase) createAsUser(input *dtos.CreateUserWithdrawI
 		return "", errors.New(utils.InternalError), http.StatusInternalServerError
 	}
 
-	var op *entities.BurnOp
+	var op *entities.BridgeOp
 
-	op = entities.NewBurnWithPermit(
+	op = entities.NewBridge(
 		input.WalletAddress,
 		input.Amount,
-		u.userInfo.Name,
-		u.userInfo.TaxId,
-		"Mocked bank code",
-		"Mocked branch code",
-		"Mocked account number",
-		input.Chain,
+		input.InputChain,
+		input.OutputChain,
 		&uId,
 		input.Permit,
 	)
 
-	err = u.burnOperationsDB.Create(op)
+	err = u.bridgeOperationsDb.Create(op)
 	if err != nil {
 		return "", errors.New(utils.OperationCreationError), http.StatusInternalServerError
 	}
-	err = u.rabbitClient.CallSmartcontract(op, entities.BURN)
+
+	burnOp := entities.NewBurnWithPermit(
+		input.WalletAddress,
+		input.Amount,
+		"",
+		"",
+		"",
+		"",
+		"",
+		input.InputChain,
+		&uId,
+		input.Permit,
+	)
+
+	burnOp.Id = op.Id
+
+	err = u.rabbitClient.CallSmartcontract(burnOp, entities.BRIDGE)
 	if err != nil {
 		return "", errors.New(utils.OperationCreationError), http.StatusInternalServerError
 	}

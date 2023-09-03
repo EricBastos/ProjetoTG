@@ -23,7 +23,7 @@
     };
 
     let user = {
-		name: null,
+		name: null, 
 	};
     subscriptions.push(
         User.subscribe(data => {

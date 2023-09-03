@@ -7,8 +7,8 @@ import (
 	"github.com/EricBastos/ProjetoTG/API/configs"
 	"github.com/EricBastos/ProjetoTG/API/internal/dtos"
 	"github.com/EricBastos/ProjetoTG/API/internal/usecases/userUsecases"
-	"github.com/EricBastos/ProjetoTG/API/internal/utils"
 	"github.com/EricBastos/ProjetoTG/Library/database"
+	"github.com/EricBastos/ProjetoTG/Library/utils"
 	"log"
 	"net/http"
 	"time"
@@ -116,6 +116,13 @@ func postStaticPixDepositWebhook(amount int, taxId string, depositId string) err
 func firstValidationCreateUserStaticPixDepositInput(input *dtos.CreateUserStaticPixDepositInput) error {
 	if input.Amount <= 0 {
 		return errors.New(utils.InvalidAmount)
+	}
+	validateChainFunc, ok := utils.ValidChains[input.Chain]
+	if !ok {
+		return errors.New(utils.InvalidChain)
+	}
+	if err := validateChainFunc(&input.WalletAddress); err != nil {
+		return err
 	}
 	return nil
 }

@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"github.com/EricBastos/ProjetoTG/BankWebhook/internal/dtos"
 	"github.com/EricBastos/ProjetoTG/BankWebhook/internal/infra/rabbitmqClient"
-	"github.com/EricBastos/ProjetoTG/BankWebhook/internal/utils"
 	"github.com/EricBastos/ProjetoTG/Library/database"
 	"github.com/EricBastos/ProjetoTG/Library/entities"
+	"github.com/EricBastos/ProjetoTG/Library/utils"
 	"log"
 	"sync"
 )

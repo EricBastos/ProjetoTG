@@ -3,10 +3,10 @@ package userUsecases
 import (
 	"errors"
 	"github.com/EricBastos/ProjetoTG/API/internal/dtos"
-	"github.com/EricBastos/ProjetoTG/API/internal/utils"
 	"github.com/EricBastos/ProjetoTG/Library/database"
 	"github.com/EricBastos/ProjetoTG/Library/entities"
 	entities3 "github.com/EricBastos/ProjetoTG/Library/pkg/entities"
+	"github.com/EricBastos/ProjetoTG/Library/utils"
 	"net/http"
 	"time"
 )
@@ -37,14 +37,6 @@ func (u *CreateUserStaticPixDepositUsecase) CreateDeposit(input *dtos.CreateUser
 }
 
 func (u *CreateUserStaticPixDepositUsecase) createAsUser(input *dtos.CreateUserStaticPixDepositInput) (string, error, int) {
-
-	validateChainFunc, ok := utils.ValidChains[input.Chain]
-	if !ok {
-		return "", errors.New(utils.InvalidChain), http.StatusBadRequest
-	}
-	if err := validateChainFunc(&input.WalletAddress); err != nil {
-		return "", err, http.StatusBadRequest
-	}
 
 	createdAt := time.Now()
 	due := createdAt.Add(5 * time.Hour)

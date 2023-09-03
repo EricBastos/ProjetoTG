@@ -71,6 +71,7 @@ func main() {
 		&entities.User{},
 		&entities.StaticDeposit{},
 		&entities.BurnOp{},
+		&entities.BridgeOp{},
 	)
 	if err != nil {
 		log.Fatal(err.Error())
@@ -79,10 +80,12 @@ func main() {
 	userDb := database.NewUserDB(db)
 	staticDepositDb := database.NewStaticDepositDB(db)
 	burnOpsDb := database.NewBurnOperationsDB(db)
+	bridgeOpsDb := database.NewBridgeOperationsDB(db)
 
-	userHandler := handlers.NewUserHandler(userDb, staticDepositDb, burnOpsDb)
+	userHandler := handlers.NewUserHandler(userDb, staticDepositDb, burnOpsDb, bridgeOpsDb)
 	depositHandler := handlers.NewDepositHandler(staticDepositDb)
 	withdrawHandler := handlers.NewWithdrawHandler(burnOpsDb, rabbitClient)
+	bridgeHandler := handlers.NewBridgeHandler(bridgeOpsDb, rabbitClient)
 
 	userGeneralAuthenticator := middlewares.NewAuthenticator("USER", userDb)
 
@@ -144,6 +147,15 @@ func main() {
 						})
 						r.Group(func(r chi.Router) {
 							r.Get("/history", userHandler.GetTransfersLogs)
+						})
+					})
+
+					r.Route("/bridge", func(r chi.Router) {
+						r.Group(func(r chi.Router) {
+							r.Post("/", bridgeHandler.BridgeAsset)
+						})
+						r.Group(func(r chi.Router) {
+							r.Get("/history", userHandler.GetBridgeLogs)
 						})
 					})
 

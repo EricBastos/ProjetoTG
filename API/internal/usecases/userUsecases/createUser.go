@@ -3,9 +3,9 @@ package userUsecases
 import (
 	"errors"
 	"github.com/EricBastos/ProjetoTG/API/internal/dtos"
-	"github.com/EricBastos/ProjetoTG/API/internal/utils"
 	"github.com/EricBastos/ProjetoTG/Library/database"
 	"github.com/EricBastos/ProjetoTG/Library/entities"
+	"github.com/EricBastos/ProjetoTG/Library/utils"
 	"net/http"
 )
 

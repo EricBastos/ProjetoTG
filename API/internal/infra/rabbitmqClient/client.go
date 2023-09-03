@@ -108,7 +108,6 @@ func (l *RabbitMQClient) CallSmartcontract(op entities.SmartContractOp, opOrigin
 	type OpToSendStruct struct {
 		ID                  string      `json:"id"`
 		UserId              string      `json:"userId"`
-		WorkspaceId         string      `json:"workspaceId"`
 		OperationOriginType string      `json:"operationOriginType"`
 		Operation           string      `json:"operation"`
 		Data                interface{} `json:"data"`

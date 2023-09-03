@@ -6,8 +6,8 @@ import (
 	"github.com/EricBastos/ProjetoTG/API/configs"
 	"github.com/EricBastos/ProjetoTG/API/internal/dtos"
 	"github.com/EricBastos/ProjetoTG/API/internal/usecases/userUsecases"
-	"github.com/EricBastos/ProjetoTG/API/internal/utils"
 	"github.com/EricBastos/ProjetoTG/Library/database"
+	"github.com/EricBastos/ProjetoTG/Library/utils"
 	"github.com/klassmann/cpfcnpj"
 	"net/http"
 	"time"
@@ -17,16 +17,19 @@ type UserHandler struct {
 	userDb          database.UserInterface
 	staticDepositDb database.StaticDepositInterface
 	burnOpsDb       database.BurnOpInterface
+	bridgeOpsDb     database.BridgeOpInterface
 }
 
 func NewUserHandler(
 	userDb database.UserInterface,
 	staticDepositDb database.StaticDepositInterface,
-	burnOpsDb database.BurnOpInterface) *UserHandler {
+	burnOpsDb database.BurnOpInterface,
+	bridgeOpsDb database.BridgeOpInterface) *UserHandler {
 	return &UserHandler{
 		userDb:          userDb,
 		staticDepositDb: staticDepositDb,
 		burnOpsDb:       burnOpsDb,
+		bridgeOpsDb:     bridgeOpsDb,
 	}
 }
 
@@ -224,6 +227,34 @@ func (h *UserHandler) GetTransfersLogs(w http.ResponseWriter, r *http.Request) {
 		taxId,
 		userId,
 		h.burnOpsDb,
+	)
+	output, err, code := usecase.GetTransfersLogs(&input)
+	if err != nil {
+		w.WriteHeader(code)
+		_ = json.NewEncoder(w).Encode(struct {
+			Error string `json:"error"`
+		}{
+			Error: err.Error(),
+		})
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+	_ = json.NewEncoder(w).Encode(output)
+}
+
+func (h *UserHandler) GetBridgeLogs(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	pageNum, pageSizeNum := utils.ExtractPaginationParams(r)
+	input := dtos.GetBridgeLogsInput{
+		Page:     int(pageNum),
+		PageSize: int(pageSizeNum),
+	}
+	userId := r.Context().Value("subject").(string)
+
+	usecase := userUsecases.NewGetBridgeLogsUsecase(
+		userId,
+		h.bridgeOpsDb,
 	)
 	output, err, code := usecase.GetTransfersLogs(&input)
 	if err != nil {

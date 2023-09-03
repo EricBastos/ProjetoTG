@@ -46,6 +46,13 @@ type BurnOpInterface interface {
 	GetLogs(docData, responsibleUser string, page, pageSize int) ([]entities.BurnOpAPI, error)
 }
 
+type BridgeOpInterface interface {
+	Create(op *entities.BridgeOp) error
+	CreateEmit(op *entities.BridgeOp, f func() error) error
+	Get(id string) (*entities.BridgeOp, error)
+	GetLogs(responsibleUser string, page, pageSize int) ([]entities.BridgeOpAPI, error)
+}
+
 type TransferInterface interface {
 	Create(transfer *entities.Transfer) error
 	FindById(id string) (*entities.Transfer, error)

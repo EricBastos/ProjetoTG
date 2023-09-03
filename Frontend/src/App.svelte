@@ -4,8 +4,10 @@
     import Tabs from "./components/Tabs.svelte";
 	import UserBar from "./components/UserBar.svelte";
     import Withdraw from "./components/Withdraw.svelte";
+	import Bridge from "./components/Bridge.svelte";
 	import WithdrawHistory from "./components/WithdrawHistory.svelte";
     import StaticDepositHistory from "./components/StaticDepositHistory.svelte";
+	import BridgeHistory from "./components/BridgeHistory.svelte";
 	import { ProviderInfo } from "./stores/Provider.js"
 	import { User } from "./stores/User.js"
 
@@ -19,7 +21,7 @@
 
 	let subscriptions = [];
 
-	const tabs = ['Deposit', 'Withdraw', 'Deposit History', 'Withdraw History'];
+	const tabs = ['Deposit', 'Withdraw', 'Bridge', 'Deposit History', 'Withdraw History', 'Bridge History'];
 	let currentTab = 'Deposit';
 
 	let providerInfo = {
@@ -99,6 +101,10 @@
 			<StaticDepositHistory />
 		{:else if currentTab === 'Withdraw History'}
 			<WithdrawHistory />
+		{:else if currentTab === 'Bridge'}
+			<Bridge />
+		{:else if currentTab === 'Bridge History'}
+			<BridgeHistory />
 		{/if}
 	{/if}
 </main>

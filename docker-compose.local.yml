@@ -89,6 +89,8 @@ services:
     expose:
       - "5672"
       - "15672"
+    ports:
+      - "8888:15672"
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq/
       - rabbitmq_log:/var/log/rabbitmq/
