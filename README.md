@@ -54,7 +54,7 @@ The .env file is filled in with a disposable wallet which I filled with some tes
 testing this project. You might want to use your own wallet and deploy your own smart contract for your own testing. 
 To do so, you can follow the steps below where I show how to use the remix IDE for that purpose:
 
-1. **Go to https://remix.ethereum.org**
+1. **Go to [Remix](https://remix.ethereum.org)**
 
 Remix is a very user-friendly IDE and allows for a quick deploy of the contracts. Open the StableCoin_Flattened.sol file
 in the IDE. You can find this file in SmartContractInterface/internal/smartContract. This is the Stable Coin smart contract
