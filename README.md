@@ -84,7 +84,8 @@ After deploying your own contract in Mumbai and Sepolia network, you should have
 Copy and paste these addresses into the .env file (ETH_CONTRACT_ADDRESS and POLYGON_CONTRACT_ADDRESS). You also should
 have the public and private keys of the wallet you used to deploy the contracts. The public key is simply your wallet
 address, whereas the private key can be exported in the Metamask app. Paste those values into ETH_PRIVATE_KEY, ETH_PUBLIC_KEY,
-POLYGON_PRIVATE_KEY and POLYGON_PUBLIC_KEY.
+POLYGON_PRIVATE_KEY and POLYGON_PUBLIC_KEY. Finally, you have to update the frontend as well. Change the deployed contracts
+addresses on Frontend/src/utils/contracts.js.
 
 ### Using the Frontend interface
 
