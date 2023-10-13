@@ -190,7 +190,7 @@
 </script>
 
 <div class="withdraw">
-    <h2>Withdraw</h2>
+    <h2>Bridge</h2>
     
     {#if providerInfo.w3 == null}
         <h3>Please install Metamask!</h3>
